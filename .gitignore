@@ -1,2 +1,4 @@
 __pycache__/
 docker/deploy.sh
+docker/deploylocal.sh
+docker/deployserver.sh
