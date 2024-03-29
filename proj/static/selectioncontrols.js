@@ -139,23 +139,3 @@ document.querySelectorAll('.analyte-checkbox').forEach(checkbox => {
         }
     });
 });
-
-function getAnalytesData() {
-    const analytes = [];
-    document.querySelectorAll('#analyte-container .analyte-row').forEach(row => {
-        if (row.querySelector('.analyte-checkbox').checked) {
-            const analyteName = row.getAttribute('data-analyte-name');
-            const threshold = row.querySelector('.threshold-input').value;
-            const ranking = row.querySelector('.ranking-input').value;
-            analytes.push({
-                analytename: analyteName,
-                threshold: threshold,
-                ranking: ranking
-            });
-        }
-    });
-    return analytes;
-}
-
-// Example usage:
-console.log(getAnalytesData());
