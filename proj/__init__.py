@@ -1,11 +1,14 @@
 import os, json, re
 from flask import Flask, current_app, g
 from sqlalchemy import create_engine
+from datetime import timedelta
 
 # Blueprint imports 
 # from .example_blueprint_file import example_blueprint
 from .main import homepage
 from .dataapi import dataapi
+
+
 
 
 # ------- custom config is used for the flask checker apps ------- #
@@ -28,6 +31,9 @@ app.debug = True # remove for production
 
 # does your application require uploaded filenames to be modified to timestamps or left as is
 app.config['CORS_HEADERS'] = 'Content-Type'
+
+# so they dont have to keep logging in
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=7)
 
 # app.config['MAX_CONTENT_LENGTH'] = 200 * 1024 * 1024  # 200MB limit
 app.secret_key = os.environ.get("FLASK_APP_SECRET_KEY")
