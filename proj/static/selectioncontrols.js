@@ -195,6 +195,9 @@ function updateSitenames(){
                 option.textContent = sitename;
                 sitenameSelect.appendChild(option);
             });
+
+            // default it to Shop Creek since thats the one they wanted to explore
+            document.getElementById('sitename-select').value = 'Shop Creek Wetland-Pond (1990-94)'
             
             currentSiteName = document.getElementById('sitename-select').value
             // updateSiteNames only gets called once anyways
