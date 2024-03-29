@@ -159,7 +159,7 @@ function updateChart() {
 
     // Adjusted scales to fit within the new width and height
     const xScale = d3.scaleLinear().domain([1, max_n_params + 1]).range([0, WIDTH]);
-    const yScale = d3.scaleLinear().domain([0, 5]).range([HEIGHT, 0]);
+    const yScale = d3.scaleLinear().domain([0, 10]).range([HEIGHT, 0]);
 
     let analytes = []
     allAnalytes.forEach(a => {
