@@ -1,5 +1,5 @@
 // Define adjusted margins to accommodate axis labels
-const MARGIN = {top: 20, right: 20, bottom: 50, left: 60}, // Increased bottom and left margins
+const MARGIN = { top: 20, right: 20, bottom: 50, left: 60 }, // Increased bottom and left margins
     WIDTH = 960 - MARGIN.left - MARGIN.right,
     HEIGHT = 500 - MARGIN.top - MARGIN.bottom;
 
@@ -7,14 +7,25 @@ const MARGIN = {top: 20, right: 20, bottom: 50, left: 60}, // Increased bottom a
 const svg = d3.select("#chart").append("svg")
     .attr("width", WIDTH + MARGIN.left + MARGIN.right)
     .attr("height", HEIGHT + MARGIN.top + MARGIN.bottom)
-  .append("g")
+    .append("g")
     .attr("transform", "translate(" + MARGIN.left + "," + MARGIN.top + ")");
 
 // Function to clear the chart
-function clearChart(){
+function clearChart() {
     svg.selectAll("*").remove(); // Clear previous drawings
 }
 
+// create a tooltip
+const tooltip = d3.select("#chart")
+    .append("div")
+    .style("opacity", 0)
+    .attr("class", "tooltip")
+    .style("background-color", "white")
+    .style("border", "solid")
+    .style("border-width", "2px")
+    .style("border-radius", "5px")
+    .style("padding", "5px")
+    .style("position", "absolute")
 
 
 // Function to draw axes and include axis labels, ensuring labels are visible
@@ -22,7 +33,7 @@ function drawAxes(svg, xScale, yScale, max_x) {
     // Remove existing axes if any, to redraw
     svg.selectAll(".axis").remove();
     svg.selectAll("text").remove();
-    
+
     // Draw X Axis and append it to the SVG
     const xAxis = svg.append("g")
         .attr("class", "x axis")
@@ -58,24 +69,46 @@ function drawAxes(svg, xScale, yScale, max_x) {
 
 // Function to add dots with tooltip
 function addDot(svg, xScale, yScale, n_params, score, data) {
-    const tooltip = d3.select("body").append("div")
-        .attr("class", "tooltip") // Add your tooltip class for styling
-        .style("opacity", 0);
+    // Assuming you already have appended a div with class 'tooltip' to the body
+    const tooltip = d3.select(".tooltip");
 
     svg.append("circle")
         .attr("cx", xScale(n_params))
         .attr("cy", yScale(score))
         .attr("r", 5)
         .style("fill", "blue")
-        .on("mouseover", function(event, d) {
+        .on("mouseover", function (event, d) {
+
+            console.log('event.clientX')
+            console.log(event.clientX)
+            console.log('event.clientY')
+            console.log(event.clientY)
+            // Convert the mouse position to SVG coordinates
+            const [x, y] = d3.pointer(event, svg.node());
+
+
             tooltip.transition()
                 .duration(200)
-                .style("opacity", .9);
-            tooltip.html("Score: " + score + "<br/>n_params: " + n_params)
-                .style("left", (event.pageX) + "px")
-                .style("top", (event.pageY - 28) + "px");
+                .style("opacity", .9)
+                .style("left", `${event.clientX + (MARGIN.left / 2)}px`)
+                .style("top", `${event.clientY - MARGIN.top}px`)
+                
+
+            tooltip.html(
+                'asdf'
+            )
+            
         })
-        .on("mouseout", function(d) {
+        .on("mousemove", function (event, d) {
+            // Convert the mouse position to SVG coordinates
+            const [x, y] = d3.pointer(event, svg.node());
+
+            d3.select(this)
+                .style("left", `${x}px`)
+                .style("top", `${y}px`);
+                
+        })
+        .on("mouseout", function (d) {
             tooltip.transition()
                 .duration(500)
                 .style("opacity", 0);
@@ -95,19 +128,19 @@ function updateChart() {
     // all possible analytes
     const allAnalytes = Array.from(document.getElementById('analyte-container').querySelectorAll('.analyte-row'));
     const max_n_params = allAnalytes.length;
-    
+
     // Adjusted scales to fit within the new width and height
     const xScale = d3.scaleLinear().domain([0, max_n_params + 1]).range([0, WIDTH]);
     const yScale = d3.scaleLinear().domain([0, 5]).range([HEIGHT, 0]);
 
     let analytes = []
     allAnalytes.forEach(a => {
-        if(!a.classList.contains('disabled')) {
+        if (!a.classList.contains('disabled')) {
             analytes.push({
-                analytename     : a.dataset.analyteName,
-                threshold_value : Number(a.querySelector('.threshold-input').value),
-                unit            : a.querySelector('.unit-select').value,
-                ranking         : Number(a.querySelector('.ranking-input').value)
+                analytename: a.dataset.analyteName,
+                threshold_value: Number(a.querySelector('.threshold-input').value),
+                unit: a.querySelector('.unit-select').value,
+                ranking: Number(a.querySelector('.ranking-input').value)
             })
         }
     })
@@ -142,10 +175,10 @@ function updateChart() {
             console.log(data)
 
             const scoreType = document.querySelector('input[name="mashup-index-method"]:checked').value;
-            const score = data[`${scoreType}_mashup_score`] ;
+            const score = data[`${scoreType}_mashup_score`];
 
             // Assuming svg, xScale, yScale are defined and set up
-            addDot(svg, xScale, yScale, data.n_params, score);
+            addDot(svg, xScale, yScale, data.n_params, score, data);
 
             // Redraw axes in case scale has changed
             drawAxes(svg, xScale, yScale, max_n_params);
@@ -163,6 +196,8 @@ function updateChart() {
 // Event listeners for inputs
 document.getElementById('add-data-button').addEventListener('click', updateChart);
 document.getElementById('clear-chart-button').addEventListener('click', clearChart);
+document.getElementById('sitename-select').addEventListener('change', clearChart);
+document.getElementById('bmp-select').addEventListener('change', clearChart);
 
 // Initialize chart
 //updateChart();
