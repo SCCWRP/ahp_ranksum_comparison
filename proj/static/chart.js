@@ -1,7 +1,10 @@
+const chartContainerWidth = document.getElementById('select-option-container').getBoundingClientRect().width * 1.2
+const chartContainerHeight = chartContainerWidth * 9 / 16
+
 // Define adjusted margins to accommodate axis labels
 const MARGIN = { top: 20, right: 20, bottom: 50, left: 60 }, // Increased bottom and left margins
-    WIDTH = 960 - MARGIN.left - MARGIN.right,
-    HEIGHT = 500 - MARGIN.top - MARGIN.bottom;
+    WIDTH = chartContainerWidth - MARGIN.left - MARGIN.right,
+    HEIGHT = chartContainerHeight - MARGIN.top - MARGIN.bottom;
 
 // Adjust SVG setup to include margins
 const svg = d3.select("#chart").append("svg")
