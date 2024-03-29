@@ -14,22 +14,19 @@
 
 <div class="container" id="select-option-container">
     
-    <select id="sitename-select">
+    <label for="sitename-select">Site Name</label>
+    <select name="sitename-select" id="sitename-select">
     </select>
-    
-    <select id="bmp-select">
+    <br>
+    <label for="bmp-select">BMP Name</label>
+    <select name="bmp-select" id="bmp-select">
     </select>
     
     <!-- Updated analyte section -->
+    <br>
+    <input type="checkbox" id="show-analytes" checked>
+    <label for="show-analytes">Show/Hide list of analytes</label>
     <div id="analyte-container">
-        <!-- Example of a row for an analyte -->
-        <div class="analyte-row" data-analyte-name="Analyte 1">
-            <input type="checkbox" class="analyte-checkbox" checked>
-            <span class="analyte-name"></span>
-            <input type="number" class="threshold-input" placeholder="Threshold">
-            <input type="number" class="ranking-input" placeholder="Ranking">
-        </div>
-        <!-- Repeat the above div for each analyte -->
     </div>
 
 </div>

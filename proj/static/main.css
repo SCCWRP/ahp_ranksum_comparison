@@ -1,25 +1,89 @@
+* {
+    box-sizing: border-box;
+}
+
 body {
     font-family: Arial, sans-serif;
     margin: 20px;
 }
+
 .container {
     margin-bottom: 20px;
 }
+
 select, input {
     padding: 10px;
-    margin-right: 10px;
+    margin: 10px 10px 10px 0; /* Spacing around inputs and selects */
     border: 1px solid #ccc;
     border-radius: 5px;
 }
+
 #chart {
     width: 100%;
     height: 400px;
 }
+
+.analyte-row {
+    display: grid;
+    grid-template-columns: auto 1fr auto auto auto; 
+    gap: 10px; 
+    align-items: center;
+    margin-bottom: 10px;
+} 
+
+
+/* Optional: If you need specific styling for header elements */
+.analyte-row.analyte-header {
+    grid-template-columns: 15px auto auto auto auto; /* Adjust the proportions as needed */
+    text-align: center;
+}
+
+.analyte-checkbox {
+    margin-right: 5px; /* Provides a bit of space between the checkbox and the name */
+}
+
+.analyte-name {
+    /* This will take up the remaining space and grow as needed */
+    margin-right: 5px;
+}
+
+.threshold-input,
+.ranking-input {
+    width: 150px; /* Or whatever fixed width you prefer */
+}
+
+
+/* Adjustments for disabled rows */
+.analyte-row.disabled .analyte-name,
 .analyte-row.disabled input[type="number"] {
     opacity: 0.5;
     pointer-events: none;
 }
-.analyte-row.disabled .analyte-name {
-    opacity: 0.5;
+
+.input-group {
+    display: grid;
+    gap: 5px;
 }
 
+.input-group span {
+    text-align: center;
+}
+
+
+/* Styles that will apply when the viewport width is 900px or more */
+@media (min-width: 900px) {
+    #select-option-container {
+      width: 50%;
+      margin: auto;
+    }
+  }
+  
+  /* Starter styles for when the viewport width is less than 900px */
+  @media (max-width: 899px) {
+    #select-option-container {
+      /* Define your styles for mobile here */
+      width: 100%; /* Example: make the container full width on smaller screens */
+      margin: auto;
+    }
+  }
+  

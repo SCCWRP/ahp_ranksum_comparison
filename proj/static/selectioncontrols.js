@@ -1,61 +1,124 @@
 function updateAnalytes(sitename, bmpname) {
-    
-    // technically the api is set up for firstbmp and last bmp (for treatment trains) but we are not concerned with that right now
     const url = `analytes?sitename=${encodeURIComponent(sitename)}&bmpname=${encodeURIComponent(bmpname)}`;
 
-    // Clear previous analyte rows
     const analyteContainer = document.getElementById('analyte-container');
     analyteContainer.innerHTML = '';
+
+    const specialAnalyteDefauts = {
+        Phosphorus: {
+            threshold: 0.5,
+            unit: 'mg/L'
+        },
+        Nitrogen: {
+            threshold: 1,
+            unit: 'mg/L'
+        },
+        Copper: {
+            threshold: 15,
+            unit: 'ug/L'
+        },
+        Zinc: {
+            threshold: 15,
+            unit: 'ug/L'
+        }
+    }
 
     fetch(url)
     .then(resp => resp.json())
     .then(data => {
+        const analytes = data.analytes; // Assuming data.analytes is the array of analytes
 
-        // Assuming data.analytes is the array of analytes
-        const analytes = data.analytes;
-        analytes.forEach(analyte => {
-            // Create a new row for each analyte
+        // Create the header row first
+        const headerRow = document.createElement('div');
+        headerRow.className = 'analyte-row analyte-header'; // Add the 'analyte-header' for specific header styling if needed
+
+        // Add your header columns here
+        const headers = [' ', 'Analyte', 'Threshold', 'Unit', 'Ranking']; // Space for the checkbox column
+        headers.forEach(headerText => {
+            const headerSpan = document.createElement('span');
+            headerSpan.textContent = headerText;
+            headerRow.appendChild(headerSpan);
+        });
+        
+        // Append the header row to the container
+        analyteContainer.appendChild(headerRow);
+
+        analytes.forEach((analyte, i) => {
+
+            
+            // Create the main row div
             const row = document.createElement('div');
             row.className = 'analyte-row';
             row.setAttribute('data-analyte-name', analyte);
 
-            // Checkbox
+            // Create the checkbox
             const checkbox = document.createElement('input');
             checkbox.type = 'checkbox';
             checkbox.className = 'analyte-checkbox';
-            checkbox.checked = true; // or some condition based on analyte data
+            checkbox.checked = true;
 
-            // Analyte name span
+            // Create the analyte name span
             const nameSpan = document.createElement('span');
             nameSpan.className = 'analyte-name';
             nameSpan.textContent = analyte;
 
-            // Threshold input
+            // Create the threshold input
             const thresholdInput = document.createElement('input');
             thresholdInput.type = 'number';
             thresholdInput.className = 'threshold-input';
             thresholdInput.placeholder = 'Threshold';
-
-            // Ranking input
+            thresholdInput.value = specialAnalyteDefauts[analyte]?.threshold ?? 1;
+            
+            // Create the unit select after the threshold
+            const unitSelect = document.createElement('select');
+            unitSelect.className = 'unit-select';
+            const ugOption = document.createElement('option');
+            ugOption.value = 'ug/L';
+            ugOption.textContent = 'ug/L';
+            const mgOption = document.createElement('option');
+            mgOption.value = 'mg/L';
+            mgOption.textContent = 'mg/L';
+            unitSelect.appendChild(ugOption);
+            unitSelect.appendChild(mgOption);
+            unitSelect.value = specialAnalyteDefauts[analyte]?.unit ?? 'mg/L';
+            
+            // Create the ranking input
             const rankingInput = document.createElement('input');
             rankingInput.type = 'number';
             rankingInput.className = 'ranking-input';
             rankingInput.placeholder = 'Ranking';
+            rankingInput.value = i + 1;
 
-            // Append everything to the row
+            // Append elements to the row
             row.appendChild(checkbox);
             row.appendChild(nameSpan);
             row.appendChild(thresholdInput);
+            row.appendChild(unitSelect);
             row.appendChild(rankingInput);
 
             // Append the row to the container
             analyteContainer.appendChild(row);
+
         });
+
+        // disable them if they are unchecked
+        document.querySelectorAll('.analyte-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const row = this.closest('.analyte-row');
+                if (this.checked) {
+                    row.classList.remove('disabled');
+                } else {
+                    row.classList.add('disabled');
+                }
+            });
+        });
+
     })
     .catch(error => {
         console.error('Error fetching analytes:', error);
     });
 }
+
 
 
 function updateBMPNames(sitename) {
@@ -129,13 +192,13 @@ function updateSitenames(){
 )()
 
 
-document.querySelectorAll('.analyte-checkbox').forEach(checkbox => {
-    checkbox.addEventListener('change', function() {
-        const row = this.closest('.analyte-row');
-        if (this.checked) {
-            row.classList.remove('disabled');
-        } else {
-            row.classList.add('disabled');
-        }
-    });
-});
+
+document.getElementById('show-analytes').addEventListener('change', function(){
+
+    const analyteContainer = document.getElementById('analyte-container');
+    if(this.checked){
+        analyteContainer.style.display = 'block'
+    } else {
+        analyteContainer.style.display = 'none'
+    }
+})
