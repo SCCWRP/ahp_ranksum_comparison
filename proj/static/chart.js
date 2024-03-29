@@ -71,7 +71,7 @@ function drawAxes(svg, xScale, yScale, max_x) {
 
 
 // Function to add dots with tooltip
-function addDot(svg, xScale, yScale, n_params, score, data) {
+function addDot(svg, xScale, yScale, n_params, score, data, color) {
     // Assuming you already have appended a div with class 'tooltip' to the body
     const tooltip = d3.select(".tooltip");
 
@@ -79,7 +79,7 @@ function addDot(svg, xScale, yScale, n_params, score, data) {
         .attr("cx", xScale(n_params))
         .attr("cy", yScale(score))
         .attr("r", 5)
-        .style("fill", "blue")
+        .style("fill", color)
         .style("cursor", "pointer")
         .on("mouseover", function (event, d) {
 
@@ -204,9 +204,10 @@ function updateChart() {
 
             const scoreType = document.querySelector('input[name="mashup-index-method"]:checked').value;
             const score = data[`${scoreType}_mashup_score`];
+            const color = document.getElementById('color-picker').value;
 
             // Assuming svg, xScale, yScale are defined and set up
-            addDot(svg, xScale, yScale, data.n_params, score, data);
+            addDot(svg, xScale, yScale, data.n_params, score, data, color);
 
             // Redraw axes in case scale has changed
             drawAxes(svg, xScale, yScale, max_n_params);
@@ -237,7 +238,7 @@ document.getElementById('add-data-button').addEventListener('click', function(){
     }
 
     updateChart();
-    
+
 });
 document.getElementById('clear-chart-button').addEventListener('click', clearChart);
 document.getElementById('sitename-select').addEventListener('change', clearChart);
