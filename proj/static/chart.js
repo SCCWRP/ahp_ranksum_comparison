@@ -77,41 +77,67 @@ function addDot(svg, xScale, yScale, n_params, score, data) {
         .attr("cy", yScale(score))
         .attr("r", 5)
         .style("fill", "blue")
+        .style("cursor", "pointer")
         .on("mouseover", function (event, d) {
 
             console.log('event.clientX')
             console.log(event.clientX)
             console.log('event.clientY')
             console.log(event.clientY)
-            // Convert the mouse position to SVG coordinates
-            const [x, y] = d3.pointer(event, svg.node());
 
 
-            tooltip.transition()
-                .duration(200)
+            tooltip
                 .style("opacity", .9)
                 .style("left", `${event.clientX + (MARGIN.left / 2)}px`)
                 .style("top", `${event.clientY - MARGIN.top}px`)
+                .style("z-index", '5')
                 
 
             tooltip.html(
-                'asdf'
+                `
+                <div class="container">
+                    <div class="row">
+                        <div class="col-sm-6">N:</div>
+                        <div class="col-sm-6">${n_params}</div>
+                        </div>
+                    <div class="row">
+                        <div class="col-sm-6">${document.querySelector('input[name="mashup-index-method"]:checked').value == 'ahp' ? 'AHP' : 'Ranksum' } Score:</div>
+                        <div class="col-sm-6">${
+                            parseFloat(
+                                Number(data[document.querySelector('input[name="mashup-index-method"]:checked').value + '_mashup_score'])
+                            .toFixed(3))
+                        }</div>
+                    </div>
+                    <br>
+                    Analytes:
+                    <div class="row">
+                        ${
+                            data.analytes.map(a => {
+                                console.log(a)
+                                return '<div class="col-4">Analytename: ' + a.analytename + '</div>' +
+                                '<div class="col-4">Ranking: ' + a.ranking + '</div>' +
+                                '<div class="col-4">threshold: ' + a.threshold_value + a.unit + '</div>'
+                            }).join('</div><br><div class="row">')
+                        }
+                    </div>
+                </div>
+                `
             )
             
         })
         .on("mousemove", function (event, d) {
-            // Convert the mouse position to SVG coordinates
-            const [x, y] = d3.pointer(event, svg.node());
 
-            d3.select(this)
-                .style("left", `${x}px`)
-                .style("top", `${y}px`);
-                
+            tooltip
+                .style("left", `${event.clientX + (MARGIN.left / 2)}px`)
+                .style("top", `${event.clientY - MARGIN.top}px`)
+                    
         })
         .on("mouseout", function (d) {
-            tooltip.transition()
-                .duration(500)
-                .style("opacity", 0);
+            tooltip
+                .style("opacity", 0)
+                .style("left", '0px')
+                .style("top", '0px')
+                .style("z-index", '-5')
         });
 }
 
@@ -198,6 +224,7 @@ document.getElementById('add-data-button').addEventListener('click', updateChart
 document.getElementById('clear-chart-button').addEventListener('click', clearChart);
 document.getElementById('sitename-select').addEventListener('change', clearChart);
 document.getElementById('bmp-select').addEventListener('change', clearChart);
+Array.from(document.querySelectorAll('input[name="mashup-index-method"]')).forEach(elem => elem.addEventListener('change', clearChart));
 
 // Initialize chart
 //updateChart();
