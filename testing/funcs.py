@@ -67,6 +67,7 @@ def mashup_index(scores, weights):
 def wq_index(
     df, 
     default_threshold = 1, 
+    grouping_columns = ['bmp'],
     
     # Default category score values
     category_score_values = {
@@ -81,7 +82,7 @@ def wq_index(
     df represents the dataframe that has the waterquality data for various rain events at a BMP site
     It must contain the following columns:
     
-    bmp
+    bmp (or a set of specified grouping columns)
     inflow_emc
     outflow_emc
     analyte
@@ -107,13 +108,13 @@ def wq_index(
     # just a step to deal with if something got messed up and there were multiple thresholds within a bmp/analyte grouping 
     thresholds = (
         df[df.inflow_emc.notnull() & df.outflow_emc.notnull()] 
-            .groupby(['bmp', 'analyte'])['threshold'].min()  
+            .groupby([*grouping_columns, 'analyte'])['threshold'].min()  
             .reset_index()
     )
 
 
     # After this we are ready to actually work
-    df = df.drop('threshold', axis = 'columns').merge(thresholds, on = ['bmp','analyte'], how = 'inner')
+    df = df.drop('threshold', axis = 'columns').merge(thresholds, on = [*grouping_columns, 'analyte'], how = 'inner')
 
 
     # Get the ratios
@@ -142,7 +143,7 @@ def wq_index(
     )
 
 
-    indexdf = df.groupby(['bmp','analyte']).apply(
+    indexdf = df.groupby([*grouping_columns,'analyte']).apply(
         lambda df: pd.Series({
             "performance_index" : (
                 ((df['category'].value_counts().get('Success', 0) / len(df)) * category_score_values.get('Success', pd.NA)) +
@@ -158,3 +159,36 @@ def wq_index(
         
     return indexdf
         
+    
+# Essentially here "None" means the argument was not provided    
+def get_raw_wq_data(conn, sitename = None, firstbmp = None, lastbmp = None, bmptype = None, analytes = None):
+    
+    assert not all([x is None for x in [sitename, firstbmp, lastbmp, bmptype]]), "sitename and bmp names OR bmptype, must be provided to query the water quality data"
+    
+    if bmptype is None:
+        valid_sitenames = pd.read_sql(f"SELECT DISTINCT sitename FROM analysis_wq ORDER BY 1", eng).sitename.values
+        valid_firstbmps = pd.read_sql(f"SELECT DISTINCT firstbmp FROM analysis_wq ORDER BY 1", eng).firstbmp.values
+        valid_lastbmps = pd.read_sql(f"SELECT DISTINCT lastbmp FROM analysis_wq ORDER BY 1", eng).lastbmp.values
+        
+        assert sitename in valid_sitenames, f"sitename {sitename} not found in list of valid sitenames (distinct sitenames in the water quality table)"
+        assert firstbmp in valid_firstbmps, f"firstbmp {firstbmp} not found in list of valid firstbmps (distinct firstbmps in the water quality table)"
+        assert lastbmp in valid_lastbmps, f"lastbmp {lastbmp} not found in list of valid lastbmps (distinct lastbmps in the water quality table)"
+        
+        qry = f"""
+            SELECT sitename, firstbmp, lastbmp, analyte, inflow_emc, outflow_emc FROM analysis_wq WHERE sitename = '{sitename}' AND firstbmp = '{firstbmp}' AND lastbmp = '{lastbmp}'
+        """
+    else:
+        valid_bmptypes = pd.read_sql(f"SELECT DISTINCT bmptype FROM analysis_wq ORDER BY 1", eng).bmptype.values
+        assert bmptype in valid_bmptypes, f"bmptype {bmptype} not found in list of valid bmptypes (distinct bmptypes in the water quality table)"
+        
+        qry = f"SELECT firstbmptype AS bmptype, analyte, inflow_emc, outflow_emc FROM analysis_wq WHERE firstbmptype = '{bmptype}'"
+    
+    if analytes is not None:
+        valid_analytes = pd.read_sql(f"SELECT DISTINCT analyte FROM analysis_wq", eng).analyte.tolist()
+        
+        assert set(analytes).issubset(set(valid_analytes)), f"Analyte(s) {set(analytes) - set(valid_analytes)} not found in the list of valid analytes (distinct analytes in the wq table)"
+        
+        qry += " AND analyte IN ('{}')".format("','".join(analytes))
+        
+        
+    df = pd.read_sql( qry, conn )

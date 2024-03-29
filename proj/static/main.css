@@ -1,0 +1,25 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+}
+.container {
+    margin-bottom: 20px;
+}
+select, input {
+    padding: 10px;
+    margin-right: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+#chart {
+    width: 100%;
+    height: 400px;
+}
+.analyte-row.disabled input[type="number"] {
+    opacity: 0.5;
+    pointer-events: none;
+}
+.analyte-row.disabled .analyte-name {
+    opacity: 0.5;
+}
+

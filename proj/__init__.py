@@ -4,6 +4,8 @@ from sqlalchemy import create_engine
 
 # Blueprint imports 
 # from .example_blueprint_file import example_blueprint
+from .main import homepage
+from .dataapi import dataapi
 
 
 # ------- custom config is used for the flask checker apps ------- #
@@ -48,4 +50,5 @@ def teardown_request(exception):
 
 
 # Blueprints
-# app.register_blueprint(example_blueprint)
+app.register_blueprint(homepage)
+app.register_blueprint(dataapi)
