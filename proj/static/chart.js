@@ -1,4 +1,4 @@
-const chartContainerWidth = document.getElementById('select-option-container').getBoundingClientRect().width * 1.2
+const chartContainerWidth = document.getElementById('select-option-container').getBoundingClientRect().width
 const chartContainerHeight = chartContainerWidth * 9 / 16
 
 // Define adjusted margins to accommodate axis labels
@@ -115,8 +115,7 @@ function addDot(svg, xScale, yScale, n_params, score, data) {
                     Analytes:
                     <div class="row">
                         ${
-                            data.analytes.map(a => {
-                                console.log(a)
+                            data.analytes.sort((a,b) => a.ranking - b.ranking).map(a => {
                                 return '<div class="col-4">Analytename: ' + a.analytename + '</div>' +
                                 '<div class="col-4">Ranking: ' + a.ranking + '</div>' +
                                 '<div class="col-4">threshold: ' + a.threshold_value + a.unit + '</div>'
@@ -159,7 +158,7 @@ function updateChart() {
     const max_n_params = allAnalytes.length;
 
     // Adjusted scales to fit within the new width and height
-    const xScale = d3.scaleLinear().domain([0, max_n_params + 1]).range([0, WIDTH]);
+    const xScale = d3.scaleLinear().domain([1, max_n_params + 1]).range([0, WIDTH]);
     const yScale = d3.scaleLinear().domain([0, 5]).range([HEIGHT, 0]);
 
     let analytes = []
@@ -223,7 +222,23 @@ function updateChart() {
 }
 
 // Event listeners for inputs
-document.getElementById('add-data-button').addEventListener('click', updateChart);
+document.getElementById('add-data-button').addEventListener('click', function(){
+    const rankingsArray = Array.from(document.getElementById('analyte-container').querySelectorAll('.analyte-row'))
+        .filter(x => !x.classList.contains('disabled'))
+        .map(x => Number(x.querySelector('input.ranking-input').value))
+
+    const rankingsAreConsecutive = rankingsArray.reduce((a,b) => a + b) === (rankingsArray.length * (rankingsArray.length + 1) / 2);
+
+    if (!rankingsAreConsecutive) {
+        let proceed = confirm("Rankings of analytes are not consecutive, do you wish to proceed?")
+        if (!proceed) {
+            return;
+        }
+    }
+
+    updateChart();
+    
+});
 document.getElementById('clear-chart-button').addEventListener('click', clearChart);
 document.getElementById('sitename-select').addEventListener('change', clearChart);
 document.getElementById('bmp-select').addEventListener('change', clearChart);
