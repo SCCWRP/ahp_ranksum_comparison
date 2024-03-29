@@ -28,18 +28,25 @@ function updateAnalytes(sitename, bmpname) {
     .then(data => {
         const analytes = data.analytes; // Assuming data.analytes is the array of analytes
 
-        // Create the header row first
+        // Create the header row with Bootstrap classes
         const headerRow = document.createElement('div');
-        headerRow.className = 'analyte-row analyte-header'; // Add the 'analyte-header' for specific header styling if needed
+        headerRow.className = 'row analyte-header';
 
-        // Add your header columns here
-        const headers = [' ', 'Analyte', 'Threshold', 'Unit', 'Ranking']; // Space for the checkbox column
-        headers.forEach(headerText => {
-            const headerSpan = document.createElement('span');
-            headerSpan.textContent = headerText;
-            headerRow.appendChild(headerSpan);
+        // Define column header titles
+        const headers = [
+            {text: '', width: 1},
+            {text: 'Analyte', width: 3},
+            {text: 'Threshold', width: 3},
+            {text: 'Unit', width: 2},
+            {text: 'Ranking', width: 3}
+        ];
+        headers.forEach(headerItem => {
+            const headerCol = document.createElement('div');
+            headerCol.className = `col-${headerItem.width}`;
+            headerCol.textContent = headerItem.text;
+            headerRow.appendChild(headerCol);
         });
-        
+
         // Append the header row to the container
         analyteContainer.appendChild(headerRow);
 
@@ -48,7 +55,7 @@ function updateAnalytes(sitename, bmpname) {
             
             // Create the main row div
             const row = document.createElement('div');
-            row.className = 'analyte-row';
+            row.className = 'row analyte-row';
             row.setAttribute('data-analyte-name', analyte);
 
             // Create the checkbox
@@ -89,12 +96,34 @@ function updateAnalytes(sitename, bmpname) {
             rankingInput.placeholder = 'Ranking';
             rankingInput.value = i + 1;
 
-            // Append elements to the row
-            row.appendChild(checkbox);
-            row.appendChild(nameSpan);
-            row.appendChild(thresholdInput);
-            row.appendChild(unitSelect);
-            row.appendChild(rankingInput);
+            // Use Bootstrap's 'col' class for each cell in the row
+            const checkboxCol = document.createElement('div');
+            checkboxCol.className = 'col-1';
+            checkboxCol.appendChild(checkbox);
+
+            const nameCol = document.createElement('div');
+            nameCol.className = 'col-3';
+            nameCol.appendChild(nameSpan);
+
+            const thresholdCol = document.createElement('div');
+            thresholdCol.className = 'col-3';
+            thresholdCol.appendChild(thresholdInput);
+
+            const unitCol = document.createElement('div');
+            unitCol.className = 'col-2';
+            unitCol.appendChild(unitSelect);
+
+            const rankingCol = document.createElement('div');
+            rankingCol.className = 'col-3';
+            rankingCol.appendChild(rankingInput);
+
+            // Append columns to the row
+            row.appendChild(checkboxCol);
+            row.appendChild(nameCol);
+            row.appendChild(thresholdCol);
+            row.appendChild(unitCol);
+            row.appendChild(rankingCol);
+
 
             // Append the row to the container
             analyteContainer.appendChild(row);

@@ -1,14 +1,31 @@
- // Basic setup for D3 chart
- const svg = d3.select("#chart").append("svg")
- .attr("width", "100%")
- .attr("height", "100%")
- .append("g");
+// Basic setup for D3 chart
+const svg = d3.select("#chart").append("svg")
+.attr("width", "100%")
+.attr("height", "100%")
+.append("g");
+
+
+function clearChart(chartID='chart'){
+    const svg = d3.select(`#${chartID}`)
+    svg.selectAll("*").remove(); // Clear previous drawings
+}
 
 // Example function to update chart, replace with your actual logic
 function updateChart() {
     // Here, you'll fetch the values from the inputs and use them to update the chart.
-    const dropdown1Value = document.getElementById('dropdown1').value;
-    const dropdown2Value = document.getElementById('dropdown2').value;
+    const sitename = document.getElementById('sitename-select').value;
+    const bmpname = document.getElementById('bmp-select').value;
+
+    let analytes = []
+    Array.from(document.getElementById('analyte-container').querySelectorAll('.analyte-row')).forEach(a => {
+        analytes.push({
+            analytename: a.dataset.analyteName,
+            threshold_value: Number(a.querySelector('.threshold-input').value),
+            units          : Number(a.querySelector('.unit-select').value),
+            ranking: Number(a.querySelector('.ranking-input').value)
+        })
+    })
+
     const multiSelectValues = Array.from(document.getElementById('multiSelect').selectedOptions).map(option => option.value);
     const numericInputValue = document.getElementById('numericInput').value;
 
