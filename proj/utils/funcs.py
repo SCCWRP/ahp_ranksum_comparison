@@ -161,29 +161,29 @@ def wq_index(
         
     
 # Essentially here "None" means the argument was not provided    
-def get_raw_wq_data(conn, sitename = None, firstbmp = None, lastbmp = None, bmptype = None, threshold_values = None, analytes = None, ):
+def get_raw_wq_data(conn, sitename = None, firstbmp = None, lastbmp = None, bmptype = None, threshold_values = None, analytes = None):
     
     assert not all([x is None for x in [sitename, firstbmp, lastbmp, bmptype]]), "sitename and bmp names OR bmptype, must be provided to query the water quality data"
     
     if bmptype is None:
-        valid_sitenames = pd.read_sql(f"SELECT DISTINCT sitename FROM analysis_wq ORDER BY 1", eng).sitename.values
-        valid_firstbmps = pd.read_sql(f"SELECT DISTINCT firstbmp FROM analysis_wq ORDER BY 1", eng).firstbmp.values
-        valid_lastbmps = pd.read_sql(f"SELECT DISTINCT lastbmp FROM analysis_wq ORDER BY 1", eng).lastbmp.values
+        valid_sitenames = pd.read_sql(f"SELECT DISTINCT sitename FROM analysis_wq ORDER BY 1", conn).sitename.values
+        valid_firstbmps = pd.read_sql(f"SELECT DISTINCT firstbmp FROM analysis_wq ORDER BY 1", conn).firstbmp.values
+        valid_lastbmps = pd.read_sql(f"SELECT DISTINCT lastbmp FROM analysis_wq ORDER BY 1", conn).lastbmp.values
         
         assert sitename in valid_sitenames, f"sitename {sitename} not found in list of valid sitenames (distinct sitenames in the water quality table)"
         assert firstbmp in valid_firstbmps, f"firstbmp {firstbmp} not found in list of valid firstbmps (distinct firstbmps in the water quality table)"
         assert lastbmp in valid_lastbmps, f"lastbmp {lastbmp} not found in list of valid lastbmps (distinct lastbmps in the water quality table)"
         
         qry = f"""
-            SELECT sitename, firstbmp, lastbmp, analyte, inflow_emc, outflow_emc FROM analysis_wq WHERE sitename = '{sitename}' AND firstbmp = '{firstbmp}' AND lastbmp = '{lastbmp}'
+            SELECT sitename, firstbmp, lastbmp, analyte, inflow_emc, outflow_emc, inflow_emc_unit AS unit FROM analysis_wq WHERE sitename = '{sitename}' AND firstbmp = '{firstbmp}' AND lastbmp = '{lastbmp}'
         """
     else:
-        valid_bmptypes = pd.read_sql(f"SELECT DISTINCT bmptype FROM analysis_wq ORDER BY 1", eng).bmptype.values
+        valid_bmptypes = pd.read_sql(f"SELECT DISTINCT bmptype FROM analysis_wq ORDER BY 1", conn).bmptype.values
         assert bmptype in valid_bmptypes, f"bmptype {bmptype} not found in list of valid bmptypes (distinct bmptypes in the water quality table)"
         
-        qry = f"SELECT firstbmptype AS bmptype, analyte, inflow_emc, outflow_emc FROM analysis_wq WHERE firstbmptype = '{bmptype}'"
+        qry = f"SELECT firstbmptype AS bmptype, analyte, inflow_emc, outflow_emc, inflow_emc_unit AS unit FROM analysis_wq WHERE firstbmptype = '{bmptype}'"
     
-    valid_analytes = pd.read_sql(f"SELECT DISTINCT analyte FROM analysis_wq", eng).analyte.tolist()
+    valid_analytes = pd.read_sql(f"SELECT DISTINCT analyte FROM analysis_wq", conn).analyte.tolist()
     
     
     if threshold_values is not None:
@@ -205,6 +205,27 @@ def get_raw_wq_data(conn, sitename = None, firstbmp = None, lastbmp = None, bmpt
     
     if threshold_values is not None:
         # sets the threshold column according to the values specified in the dictionary
-        df['threshold'] = df.analyte.apply(lambda analytename: threshold_values.get(analytename))
+        df['threshold'] = df.analyte.apply(lambda analytename: threshold_values.get(analytename).get('threshold_value'))
+        df['threshold_unit'] = df.analyte.apply(lambda analytename: threshold_values.get(analytename).get('unit'))
+    
+    return df
+
+
+def fix_thresh_units(df):
+    required_cols = ['unit', 'threshold_unit', 'threshold']
+    assert set(required_cols).issubset(set(df.columns)), f"in fix thresh units function {','.join(required_cols)} not found in columns of data frame"
+    
+    df = df.replace('μg/L','ug/L')
+    df['threshold'] = df.apply(
+        lambda row: 
+            row.threshold 
+            if row.unit == row.threshold_unit
+            else (row.threshold / 1000) if ((row.unit == 'mg/L') and (row.threshold_unit == 'ug/L'))
+            else (row.threshold * 1000) if ((row.unit == 'ug/L') and (row.threshold_unit == 'mg/L'))
+            else pd.NA
+        ,axis = 1
+    )
+    
+    df.drop('threshold_unit', axis = 'columns', inplace = True)
     
     return df

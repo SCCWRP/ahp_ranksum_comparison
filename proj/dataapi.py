@@ -1,9 +1,12 @@
 import pandas as pd
 from flask import Blueprint, request, render_template, jsonify, g
 
-from .utils import get_raw_wq_data
+from .utils import get_raw_wq_data, wq_index, calc_ahp_weights, calc_ranksum_weights, fix_thresh_units, mashup_index
 
 dataapi = Blueprint('dataapi', __name__, template_folder = 'templates')
+
+# for printing
+pd.set_option('display.max_columns', 15)
 
 @dataapi.route('/sitenames', methods = ['GET'])
 def sitenames():
@@ -200,7 +203,7 @@ def getdata():
     params = request.json
     
     sitename = params.get('sitename')
-    firstbmp = params.get('firstbmp')
+    firstbmp = params.get('firstbmp', params.get('bmpname'))
     lastbmp = params.get('lastbmp', firstbmp) # default to setting it the same as firstbmp
     
     # analytes should be a list
@@ -208,6 +211,7 @@ def getdata():
     #     {
     #         "analytename"     : <actual name of the analyte>,
     #         "threshold_value" : <actual threshold value>,
+    #         "unit" : <units of threshold value>,
     #         "ranking"         : <user-defined analyte priority ranking>
     #     },
     #     ....
@@ -228,10 +232,10 @@ def getdata():
         }
         return jsonify(resp), 400
     
-    if not all([set(a.keys()).issubset(set('analytename','threshold_value','ranking')) for a in analytes]):
+    if not all([set(a.keys()).issubset(set(['analytename','threshold_value','unit','ranking'])) for a in analytes]):
         resp = {
             "error": "Invalid parameter values",
-            "message": "all dictionaries in the analytes list must have attributes analytename, threshold_value, and ranking"
+            "message": "all dictionaries in the analytes list must have attributes analytename, threshold_value, unit and ranking"
         }
         return jsonify(resp), 400
     
@@ -256,7 +260,7 @@ def getdata():
         
         
         # prevent SQL injection by requiring that the provided sitename comes from the distinct sitenames in the analysis table
-        valid_sitenames = pd.read_sql(f"SELECT DISTINCT sitename FROM {tablename} ORDER BY 1", eng).sitename.values
+        valid_sitenames = pd.read_sql(f"SELECT DISTINCT sitename FROM analysis_wq ORDER BY 1", eng).sitename.values
         
         if sitename not in valid_sitenames:
             resp = {
@@ -287,14 +291,31 @@ def getdata():
     # build threshold_values according to how the function specifies - a dictionary whose keys are the analyte names and values are the threshold values
     threshold_values = dict()
     for a in analytes:
-        threshold_values[a.get('analytename')] = a.get('threshold_value')
+        threshold_values[a.get('analytename')] = {
+            "threshold_value" : a.get('threshold_value'),
+            "unit"  : a.get('unit')
+        }
+    
+    print('threshold_values')
+    print(threshold_values)
     
     # anyways, if both are given it goes with threshold values
     # if neither are given it grabs all analytes
     # if analytes is not provided, it is none and its no big deal
-    wqdata = get_raw_wq_data(conn=eng,sitename=sitename,firstbmp=firstbmp,lastbmp=lastbmp,bmptype=bmptype)
+    wqdata = get_raw_wq_data(conn=eng,sitename=sitename,firstbmp=firstbmp,lastbmp=lastbmp,bmptype=bmptype,threshold_values=threshold_values)
     
-    wqindexdf = wq_index(wqdata)
+    print('wqdata')
+    print(wqdata)
+    
+    wqdata = fix_thresh_units(wqdata)
+    
+    print('wqdata after fix thresh units')
+    print(wqdata)
+    
+    wqindexdf = wq_index(wqdata, grouping_columns = ['sitename', 'firstbmp', 'lastbmp'])
+    
+    print('wqindexdf')
+    print(wqindexdf)
     
     # build rankings dictionary in a convenient way to tack on to the index df
     rankings_dict = dict()
@@ -309,8 +330,8 @@ def getdata():
     # Ranksum just needs the rankings (numpy array)
     wqindexdf['ranksum_weights'] = calc_ranksum_weights(wqindexdf.ranking.values)
     
-    ahpmash = mashup_index(indexdf.performance_index.values, indexdf.ahp_weights.values)
-    rankmash = mashup_index(indexdf.performance_index.values, indexdf.ranksum_weights.values)
+    ahpmash = mashup_index(wqindexdf.performance_index.values, wqindexdf.ahp_weights.values)
+    rankmash = mashup_index(wqindexdf.performance_index.values, wqindexdf.ranksum_weights.values)
     
     resp = {
         "sitename"             : sitename,
@@ -326,7 +347,7 @@ def getdata():
     }
     
     # return repsonse
-    return jsonify(resp), 200
+    return jsonify(resp)
     
 
 
