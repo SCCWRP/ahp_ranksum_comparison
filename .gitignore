@@ -3,3 +3,4 @@ docker/deploy.sh
 docker/deploylocal.sh
 docker/deployserver.sh
 testing
+frontend/node_modules

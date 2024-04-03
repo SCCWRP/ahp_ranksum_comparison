@@ -147,7 +147,7 @@ def analytes():
         
         
         # prevent SQL injection by requiring that the provided sitename comes from the distinct sitenames in the analysis table
-        valid_sitenames = pd.read_sql(f"SELECT DISTINCT sitename FROM analysis_wq ORDER BY 1", eng).sitename.values
+        valid_sitenames = pd.read_sql(f"SELECT DISTINCT sitename FROM vw_mashup_index_comparison_rawdata ORDER BY 1", eng).sitename.values
         
         if sitename not in valid_sitenames:
             resp = {
@@ -159,7 +159,7 @@ def analytes():
             
         
         # Now we are ready to construct the query
-        qry = f"SELECT DISTINCT analyte FROM analysis_wq WHERE sitename = '{sitename}' AND firstbmp = '{firstbmp}' AND lastbmp = '{lastbmp}' ORDER BY 1"
+        qry = f"SELECT DISTINCT analyte FROM vw_mashup_index_comparison_rawdata WHERE sitename = '{sitename}' AND firstbmp = '{firstbmp}' AND lastbmp = '{lastbmp}' ORDER BY 1"
     
     else:
         
@@ -172,7 +172,7 @@ def analytes():
         
         # future proofing in case they want to look at it by BMP type
         # prevent SQL injection by requiring that the provided sitename comes from the distinct sitenames in the analysis table
-        valid_bmptypes = pd.read_sql(f"SELECT DISTINCT firstbmptype FROM analysis_wq ORDER BY 1", eng).firstbmptype.values
+        valid_bmptypes = pd.read_sql(f"SELECT DISTINCT firstbmptype FROM vw_mashup_index_comparison_rawdata ORDER BY 1", eng).firstbmptype.values
         if bmptype not in valid_bmptypes:
             resp = {
                 "error": "Invalid bmptype",
@@ -182,7 +182,7 @@ def analytes():
         
         # Now we are ready to construct the query
         # Just go off firstbmptype
-        qry = f"SELECT DISTINCT analyte FROM analysis_wq WHERE firstbmptype = '{bmptype}' ORDER BY 1"
+        qry = f"SELECT DISTINCT analyte FROM vw_mashup_index_comparison_rawdata WHERE firstbmptype = '{bmptype}' ORDER BY 1"
         
         
     
@@ -260,7 +260,7 @@ def getdata():
         
         
         # prevent SQL injection by requiring that the provided sitename comes from the distinct sitenames in the analysis table
-        valid_sitenames = pd.read_sql(f"SELECT DISTINCT sitename FROM analysis_wq ORDER BY 1", eng).sitename.values
+        valid_sitenames = pd.read_sql(f"SELECT DISTINCT sitename FROM vw_mashup_index_comparison_rawdata ORDER BY 1", eng).sitename.values
         
         if sitename not in valid_sitenames:
             resp = {
@@ -280,7 +280,7 @@ def getdata():
         
         # future proofing in case they want to look at it by BMP type
         # prevent SQL injection by requiring that the provided sitename comes from the distinct sitenames in the analysis table
-        valid_bmptypes = pd.read_sql(f"SELECT DISTINCT firstbmptype FROM analysis_wq ORDER BY 1", eng).firstbmptype.values
+        valid_bmptypes = pd.read_sql(f"SELECT DISTINCT firstbmptype FROM vw_mashup_index_comparison_rawdata ORDER BY 1", eng).firstbmptype.values
         if bmptype not in valid_bmptypes:
             resp = {
                 "error": "Invalid bmptype",

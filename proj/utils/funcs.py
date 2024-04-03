@@ -166,24 +166,24 @@ def get_raw_wq_data(conn, sitename = None, firstbmp = None, lastbmp = None, bmpt
     assert not all([x is None for x in [sitename, firstbmp, lastbmp, bmptype]]), "sitename and bmp names OR bmptype, must be provided to query the water quality data"
     
     if bmptype is None:
-        valid_sitenames = pd.read_sql(f"SELECT DISTINCT sitename FROM analysis_wq ORDER BY 1", conn).sitename.values
-        valid_firstbmps = pd.read_sql(f"SELECT DISTINCT firstbmp FROM analysis_wq ORDER BY 1", conn).firstbmp.values
-        valid_lastbmps = pd.read_sql(f"SELECT DISTINCT lastbmp FROM analysis_wq ORDER BY 1", conn).lastbmp.values
+        valid_sitenames = pd.read_sql(f"SELECT DISTINCT sitename FROM vw_mashup_index_comparison_rawdata ORDER BY 1", conn).sitename.values
+        valid_firstbmps = pd.read_sql(f"SELECT DISTINCT firstbmp FROM vw_mashup_index_comparison_rawdata ORDER BY 1", conn).firstbmp.values
+        valid_lastbmps = pd.read_sql(f"SELECT DISTINCT lastbmp FROM vw_mashup_index_comparison_rawdata ORDER BY 1", conn).lastbmp.values
         
         assert sitename in valid_sitenames, f"sitename {sitename} not found in list of valid sitenames (distinct sitenames in the water quality table)"
         assert firstbmp in valid_firstbmps, f"firstbmp {firstbmp} not found in list of valid firstbmps (distinct firstbmps in the water quality table)"
         assert lastbmp in valid_lastbmps, f"lastbmp {lastbmp} not found in list of valid lastbmps (distinct lastbmps in the water quality table)"
         
         qry = f"""
-            SELECT sitename, firstbmp, lastbmp, analyte, inflow_emc, outflow_emc, inflow_emc_unit AS unit FROM analysis_wq WHERE sitename = '{sitename}' AND firstbmp = '{firstbmp}' AND lastbmp = '{lastbmp}'
+            SELECT sitename, firstbmp, lastbmp, analyte, inflow_emc, outflow_emc, inflow_emc_unit AS unit FROM vw_mashup_index_comparison_rawdata WHERE sitename = '{sitename}' AND firstbmp = '{firstbmp}' AND lastbmp = '{lastbmp}'
         """
     else:
-        valid_bmptypes = pd.read_sql(f"SELECT DISTINCT bmptype FROM analysis_wq ORDER BY 1", conn).bmptype.values
+        valid_bmptypes = pd.read_sql(f"SELECT DISTINCT bmptype FROM vw_mashup_index_comparison_rawdata ORDER BY 1", conn).bmptype.values
         assert bmptype in valid_bmptypes, f"bmptype {bmptype} not found in list of valid bmptypes (distinct bmptypes in the water quality table)"
         
-        qry = f"SELECT firstbmptype AS bmptype, analyte, inflow_emc, outflow_emc, inflow_emc_unit AS unit FROM analysis_wq WHERE firstbmptype = '{bmptype}'"
+        qry = f"SELECT firstbmptype AS bmptype, analyte, inflow_emc, outflow_emc, inflow_emc_unit AS unit FROM vw_mashup_index_comparison_rawdata WHERE firstbmptype = '{bmptype}'"
     
-    valid_analytes = pd.read_sql(f"SELECT DISTINCT analyte FROM analysis_wq", conn).analyte.tolist()
+    valid_analytes = pd.read_sql(f"SELECT DISTINCT analyte FROM vw_mashup_index_comparison_rawdata", conn).analyte.tolist()
     
     
     if threshold_values is not None:
