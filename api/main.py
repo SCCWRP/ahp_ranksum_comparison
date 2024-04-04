@@ -3,12 +3,6 @@ from flask import Blueprint, render_template, session, redirect, url_for, reques
 
 homepage = Blueprint('homepage', __name__, template_folder = 'templates')
 
-@homepage.route('/react')
-def reactindex():
-    if not session.get('LOGGED_IN'):
-        return redirect(url_for('homepage.login'))
-        
-    return render_template('reactapp.jinja2')
 
 @homepage.route('/')
 def index():

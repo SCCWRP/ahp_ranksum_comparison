@@ -34,6 +34,11 @@ def sitenames():
     return jsonify(sitenames=sitenames)
 
 
+############################################################################################################################################
+############################################################################################################################################
+############################################################################################################################################
+
+
 @dataapi.route('/bmpnames', methods = ['GET'])
 def bmpnames():
     eng = g.eng
@@ -103,6 +108,10 @@ def bmpnames():
     # return repsonse
     return jsonify(bmpnames=bmpnames)
     
+    
+##############################################################################################################################
+##############################################################################################################################
+##############################################################################################################################
 
 
 # All BMP Types
@@ -117,7 +126,9 @@ def bmptypes():
     return jsonify(bmptypes=bmptypes)
     
 
-    
+##############################################################################################################################
+##############################################################################################################################
+##############################################################################################################################
     
 # Only applies to Water Quality
 @dataapi.route('/analytes', methods = ['GET'])
@@ -159,7 +170,7 @@ def analytes():
             
         
         # Now we are ready to construct the query
-        qry = f"SELECT DISTINCT analyte FROM vw_mashup_index_comparison_rawdata WHERE sitename = '{sitename}' AND firstbmp = '{firstbmp}' AND lastbmp = '{lastbmp}' ORDER BY 1"
+        qry = f"SELECT DISTINCT analyte AS analytename, inflow_emc_unit AS unit FROM vw_mashup_index_comparison_rawdata WHERE sitename = '{sitename}' AND firstbmp = '{firstbmp}' AND lastbmp = '{lastbmp}' ORDER BY 1"
     
     else:
         
@@ -182,17 +193,256 @@ def analytes():
         
         # Now we are ready to construct the query
         # Just go off firstbmptype
-        qry = f"SELECT DISTINCT analyte FROM vw_mashup_index_comparison_rawdata WHERE firstbmptype = '{bmptype}' ORDER BY 1"
+        qry = f"SELECT DISTINCT analyte AS analytename, inflow_emc_unit AS unit FROM vw_mashup_index_comparison_rawdata WHERE firstbmptype = '{bmptype}' ORDER BY 1"
         
         
     
-    analytes = pd.read_sql(qry, eng).analyte.tolist()
+    analytes = pd.read_sql(qry, eng).to_dict('records')
+    print("analytes")
+    print(analytes)
     
     # return repsonse
     return jsonify(analytes=analytes)
     
 
 
+
+##########################################################################################################################################################
+##########################################################################################################################################################
+##########################################################################################################################################################
+    
+    
+# Only applies to Water Quality
+@dataapi.route('/threshval', methods = ['GET'])
+def threshvals():
+    eng = g.eng
+    
+    sitename = request.args.get('sitename')
+    firstbmp = request.args.get('firstbmp', request.args.get('bmpname')) # we'll take firstbmp or bmpname
+    lastbmp = request.args.get('lastbmp', firstbmp) # default to setting it the same as firstbmp
+    bmptype = request.args.get('bmptype')
+    percentile = request.args.get('percentile')
+    analyte = request.args.get('analyte')
+    inflow_or_outflow = request.args.get('inflow_or_outflow', 'inflow')
+    
+    if inflow_or_outflow not in ('inflow','outflow'):
+        return jsonify({"error": "Invalid query string arg", "message": "inflow_or_outflow arg must be 'inflow' or 'outflow'"}), 400
+    
+    if percentile is not None:
+        if not all([x.isdigit() for x in str(percentile).split('.')]):
+            return jsonify({"error": "Invalid query string arg", "message": "Percentile query string arg is not a valid number"}), 400
+    else:
+        return jsonify({"error": "Missing required query string arg", "message": "percentile query string arg is required"}), 400
+    
+    if bmptype is None:
+        # Sitename and firstbmp are required
+        if sitename is None:
+            resp = {
+                "error": "Missing required data",
+                "message": "sitename name must be provided via query string arg sitename"
+            }
+            return jsonify(resp), 400
+        
+        if firstbmp is None:
+            resp = {
+                "error": "Missing required data",
+                "message": "firstbmp name must be provided via query string arg firstbmp"
+            }
+            return jsonify(resp), 400
+        
+        
+        # prevent SQL injection by requiring that the provided sitename comes from the distinct sitenames in the analysis table
+        valid_sitenames = pd.read_sql(f"SELECT DISTINCT sitename FROM vw_mashup_index_comparison_rawdata ORDER BY 1", eng).sitename.values
+        
+        if sitename not in valid_sitenames:
+            resp = {
+                "error": "Invalid sitename",
+                "message": "sitename provided not found in the list of valid sitenames"
+            }
+            return jsonify(resp), 400
+        
+            
+        
+        # Now we are ready to construct the query
+        analyteqry = f"SELECT DISTINCT analyte FROM vw_mashup_index_comparison_rawdata WHERE sitename = '{sitename}' AND firstbmp = '{firstbmp}' AND lastbmp = '{lastbmp}' ORDER BY 1"
+    
+    else:
+        
+        if any([ x is not None for x in [sitename, firstbmp, lastbmp] ]):
+            resp = {
+                "error": "Invalid request",
+                "message": "Either specify a BMP Type, or a sitename/bmp combination - not both"
+            }
+            return jsonify(resp), 400
+        
+        # future proofing in case they want to look at it by BMP type
+        # prevent SQL injection by requiring that the provided sitename comes from the distinct sitenames in the analysis table
+        valid_bmptypes = pd.read_sql(f"SELECT DISTINCT firstbmptype FROM vw_mashup_index_comparison_rawdata ORDER BY 1", eng).firstbmptype.values
+        if bmptype not in valid_bmptypes:
+            resp = {
+                "error": "Invalid bmptype",
+                "message": "bmptype provided not found in the list of bmp types in the water quality analysis table"
+            }
+            return jsonify(resp), 400
+        
+        # Now we are ready to construct the query
+        # Just go off firstbmptype
+        analyteqry = f"SELECT DISTINCT analyte FROM vw_mashup_index_comparison_rawdata WHERE firstbmptype = '{bmptype}' ORDER BY 1"
+        
+    if analyte not in pd.read_sql(analyteqry, eng).analyte.values:
+        return jsonify({"error": "Invalid query string arg", "message": f"Invalid analyte {analyte}"}), 400
+    
+    mainqry = f"""
+        SELECT 
+            PERCENTILE_CONT({percentile}) WITHIN GROUP (ORDER BY {inflow_or_outflow}_emc) AS threshval
+        FROM 
+            vw_mashup_index_comparison_rawdata
+        WHERE 
+            analyte = '{analyte}'
+    """
+        
+    if bmptype is None:
+        mainqry += f"""
+            AND sitename ~ '{sitename}'
+            AND firstbmp ~ '{firstbmp}'
+        """
+    else:
+        mainqry += f"""
+            AND firstbmptype = '{bmptype}'
+        """
+    
+    threshvallist = pd.read_sql(mainqry, eng).threshval.tolist()
+    threshval = threshvallist[0] if len(threshvallist) > 0 else -88
+    
+    # return repsonse
+    return jsonify(threshval=threshval)
+
+
+
+
+#-----------------------------------------------------------------------------------------------------------------------------------------------
+################################################################################################################################################
+################################################################################################################################################
+################################################################################################################################################
+#-----------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+# Only applies to Water Quality
+@dataapi.route('/percentileval', methods = ['GET'])
+def percentilevals():
+    eng = g.eng
+    
+    sitename = request.args.get('sitename')
+    firstbmp = request.args.get('firstbmp', request.args.get('bmpname')) # we'll take firstbmp or bmpname
+    lastbmp = request.args.get('lastbmp', firstbmp) # default to setting it the same as firstbmp
+    bmptype = request.args.get('bmptype')
+    threshval = request.args.get('threshval')
+    analyte = request.args.get('analyte')
+    inflow_or_outflow = request.args.get('inflow_or_outflow', 'inflow')
+    
+    
+    if inflow_or_outflow not in ('inflow','outflow'):
+        return jsonify({"error": "Invalid query string arg", "message": "inflow_or_outflow arg must be 'inflow' or 'outflow'"}), 400
+    
+    
+    if threshval is not None:
+        if not all([x.isdigit() for x in str(threshval).split('.')]):
+            return jsonify({"error": "Invalid query string arg", "message": "threshval query string arg is not a valid number"}), 400
+    else:
+        return jsonify({"error": "Missing required query string arg", "message": "threshval query string arg is required"}), 400
+    
+    if bmptype is None:
+        # Sitename and firstbmp are required
+        if sitename is None:
+            resp = {
+                "error": "Missing required data",
+                "message": "sitename name must be provided via query string arg sitename"
+            }
+            return jsonify(resp), 400
+        
+        if firstbmp is None:
+            resp = {
+                "error": "Missing required data",
+                "message": "firstbmp name must be provided via query string arg firstbmp"
+            }
+            return jsonify(resp), 400
+        
+        
+        # prevent SQL injection by requiring that the provided sitename comes from the distinct sitenames in the analysis table
+        valid_sitenames = pd.read_sql(f"SELECT DISTINCT sitename FROM vw_mashup_index_comparison_rawdata ORDER BY 1", eng).sitename.values
+        
+        if sitename not in valid_sitenames:
+            resp = {
+                "error": "Invalid sitename",
+                "message": "sitename provided not found in the list of valid sitenames"
+            }
+            return jsonify(resp), 400
+        
+            
+        
+        # Now we are ready to construct the query
+        analyteqry = f"SELECT DISTINCT analyte FROM vw_mashup_index_comparison_rawdata WHERE sitename = '{sitename}' AND firstbmp = '{firstbmp}' AND lastbmp = '{lastbmp}' ORDER BY 1"
+    
+    else:
+        
+        if any([ x is not None for x in [sitename, firstbmp, lastbmp] ]):
+            resp = {
+                "error": "Invalid request",
+                "message": "Either specify a BMP Type, or a sitename/bmp combination - not both"
+            }
+            return jsonify(resp), 400
+        
+        # future proofing in case they want to look at it by BMP type
+        # prevent SQL injection by requiring that the provided sitename comes from the distinct sitenames in the analysis table
+        valid_bmptypes = pd.read_sql(f"SELECT DISTINCT firstbmptype FROM vw_mashup_index_comparison_rawdata ORDER BY 1", eng).firstbmptype.values
+        if bmptype not in valid_bmptypes:
+            resp = {
+                "error": "Invalid bmptype",
+                "message": "bmptype provided not found in the list of bmp types in the water quality analysis table"
+            }
+            return jsonify(resp), 400
+        
+        # Now we are ready to construct the query
+        # Just go off firstbmptype
+        analyteqry = f"SELECT DISTINCT analyte FROM vw_mashup_index_comparison_rawdata WHERE firstbmptype = '{bmptype}' ORDER BY 1"
+        
+    if analyte not in pd.read_sql(analyteqry, eng).analyte.values:
+        return jsonify({"error": "Invalid query string arg", "message": "Invalid analyte"}), 400
+    
+    
+    mainqry = f"""
+        WITH RankedValues AS (
+            SELECT
+                inflow_emc,
+                CUME_DIST() OVER (ORDER BY inflow_emc) AS cumulative_distribution
+            FROM vw_mashup_index_comparison_rawdata
+            WHERE analyte = '{analyte}' 
+            {
+                "AND sitename ~ '{}' AND firstbmp ~ '{}'".format(sitename, firstbmp) if bmptype is None else "AND firstbmptype = '{}'".format(bmptype)
+            }
+        ),
+        PercentileRank AS (
+            SELECT
+                MAX(cumulative_distribution) AS percentile_rank
+            FROM RankedValues
+            WHERE inflow_emc <= {threshval}
+        )
+        SELECT percentile_rank
+        FROM PercentileRank
+    """
+
+    percentile_val_list = pd.read_sql(mainqry, eng).percentile_rank.tolist()
+    percentile_rank = percentile_val_list[0] if len(percentile_val_list) > 0 else -88
+    
+    # return repsonse
+    return jsonify(percentile_rank=percentile_rank)
+
+
+
+#############################################################################################################################################################    
+#############################################################################################################################################################    
+#############################################################################################################################################################    
     
     
 # Actually get the data (This route is for water quality - if they request for hydrology we can build that later - too much time to put in to build that right now)
@@ -216,6 +466,7 @@ def getdata():
     #     },
     #     ....
     # ]
+    
     analytes = params.get('analytes')
     
     if not isinstance(analytes, list):

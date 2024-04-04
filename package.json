@@ -1,0 +1,31 @@
+{
+  "name": "mashup-index-comparison",
+  "version": "1.0.0",
+  "description": "A simple react app for comparing the AHP and Ranksum 'mashup' performance indexc calculations",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "esbuild ./src/index.jsx --bundle --outdir=./api/static --minify --sourcemap --target=es2015",
+    "serve": "sudo ./docker/deployserver.sh",
+    "dev": "esbuild ./src/index.jsx --bundle --outdir=./api/static --sourcemap --target=es2015 --watch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SCCWRP/ahp_ranksum_comparison.git"
+  },
+  "author": "Edward Tiernan, Robert Butler",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/SCCWRP/ahp_ranksum_comparison/issues"
+  },
+  "homepage": "https://github.com/SCCWRP/ahp_ranksum_comparison#readme",
+  "dependencies": {
+    "bootstrap": "^5.3.3",
+    "d3": "^7.9.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.20.2"
+  }
+}
