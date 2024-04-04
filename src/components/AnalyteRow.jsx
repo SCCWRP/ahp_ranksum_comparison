@@ -59,7 +59,6 @@ function AnalyteRow({ siteName, bmpName, analytename, initialThreshPercentile = 
         fetch(`threshval?sitename=${encodeURIComponent(siteName)}&bmpname=${encodeURIComponent(bmpName)}&analyte=${encodeURIComponent(analytename)}&percentile=${encodeURIComponent(threshPercentile)}`) // Your API endpoint for fetching site names
             .then((response) => response.json())
             .then((data) => {
-                console.log(data)
                 setThreshVal((t) => Math.round(data.threshval * 100) / 100)
             });
     }, []);
@@ -75,7 +74,6 @@ function AnalyteRow({ siteName, bmpName, analytename, initialThreshPercentile = 
                         throw new Error('Network response was not ok');
                     }
                     const data = await response.json();
-                    console.log(data);
                     setThreshVal(Math.round(data.threshval * 100) / 100);
                     // Reset the flag after fetching
                     setUserUpdatedPercentile(false);
@@ -98,7 +96,6 @@ function AnalyteRow({ siteName, bmpName, analytename, initialThreshPercentile = 
                         throw new Error('Network response was not ok');
                     }
                     const data = await response.json();
-                    console.log(data);
                     setThreshPercentile(Math.round(data.percentile_rank * 100) / 100);
                     // Reset the flag after fetching
                     setUserUpdatedThreshVal(false);

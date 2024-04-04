@@ -31,22 +31,57 @@ function App() {
     const [universalThreshPercentile, setUniversalThreshPercentile] = useState(0.25);
 
     function updatePlotData() {
-        fetch(
-            'getdata',
-            {
-                method: 'post',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    sitename: selectedSiteName,
-                    bmpname: selectedBmpName,
-                    analytes: activeAnalytes
-                })
+        
+        if (activeAnalytes.length < 2){
+            alert("Mashup score cannot be calculated with less than 2 parameters")
+            return;
+        }
+
+        const consecutiveRankings = ((activeAnalytes.map((a) => a.rank).reduce((prev, cur) => prev + cur, 0)) === (activeAnalytes.length * (activeAnalytes.length + 1) * 0.5));
+
+        if (!consecutiveRankings){
+            const confirmed = confirm("Priority ranking values are not consecutive integers, which may produce unexpected results. Do you wish to proceed?")
+            if (!confirmed) return;
+        }
+
+        fetch('getdata', {
+            method: 'post',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                sitename: selectedSiteName,
+                bmpname: selectedBmpName,
+                analytes: activeAnalytes
             })
-            .then(resp => resp.json())
-            .then(data => setPlotData( (d) => [...d, data] ))
+        })
+        .then(async response => {
+            // Check if the response is ok (status in the range 200-299)
+            if (!response.ok) {
+                // Try to parse the error body
+                const errorBody = await response.json();
+                // Throw an object that includes both the status and the parsed body
+                throw { status: response.status, ...errorBody };
+            }
+            return response.json();
+        })
+        .then(data => setPlotData(d => [...d, data]))
+        .catch(error => {
+            // Check if it's an expected error structure
+            if (error.status && error.message) {
+                console.error(`Fetch error (${error.status}): ${error.message}`);
+                // If 'error.error' or similar contains additional info, log it as well
+                if (error.error) {
+                    console.error(`Error details: ${error.error}`);
+                }
+            } else {
+                // For unexpected errors (e.g., network errors), log the whole error
+                console.error('Unexpected error:', error);
+            }
+        });
     }
+    
+    
 
 
     // Fetch Site Names
@@ -82,8 +117,6 @@ function App() {
         fetch(`analytes?sitename=${encodeURIComponent(selectedSiteName)}&bmpname=${encodeURIComponent(selectedBmpName)}`) // Your API endpoint for fetching analytes
             .then((response) => response.json())
             .then((data) => {
-                console.log('analytes')
-                console.log(data)
                 setAnalytes((a) => data.analytes);
                 setActiveAnalytes([]); // reset
             });
@@ -195,7 +228,7 @@ function App() {
                         onClick={(e) => {
                             const confirmed = confirm(`Are you sure you want to clear existing data for site ${selectedSiteName} and BMP ${selectedBmpName} ?`)
                             if (!confirmed) return;
-                            setPlotData((d) => d.filter(i => ((i.sitename != selectedSiteName) & (i.firstbmp != selectedBmpName)) ))
+                            setPlotData((d) => d.filter(i => ((i.sitename != selectedSiteName) & (i.bmpname != selectedBmpName)) ))
                         }}
                     >
                         Clear Plot Data for current site
@@ -228,7 +261,7 @@ function App() {
                                 <th scope="col">Threshold Percentile</th>
                                 <th scope="col">Threshold Value</th>
                                 <th scope="col">Unit</th>
-                                <th scope="col">Ranking</th>
+                                <th scope="col">Priority Ranking</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -251,7 +284,7 @@ function App() {
 
             <div id="index-comparison-chart" className="mt-5">
                 <div class="chart-label" style={{textAlign: 'center', fontSize: '20px'}}>Ranksum vs AHP Comparison plot</div>
-                <IndexComparisonChart plotData={plotData} ahpColor={ahpColor} ranksumColor={ranksumColor}/>
+                <IndexComparisonChart plotData={plotData.filter((d) => ((d.sitename == selectedSiteName) & (d.bmpname == selectedBmpName)))} ahpColor={ahpColor} ranksumColor={ranksumColor}/>
             </div>
         </div>
     );

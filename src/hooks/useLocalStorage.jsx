@@ -4,8 +4,6 @@ const useLocalStorage = (key, defaultValue) => {
   const [value, setValue] = useState(() => {
     try {
       const item = localStorage.getItem(key);
-      console.log("ITEM");
-      console.log(item)
       // Use defaultValue if the item is null; otherwise, parse the stored JSON
       return item ? JSON.parse(item) : defaultValue;
     } catch (error) {

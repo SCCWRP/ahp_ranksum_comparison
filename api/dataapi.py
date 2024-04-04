@@ -485,6 +485,14 @@ def getdata():
         }
         return jsonify(resp), 400
     
+    if len(analytes) < 2:
+        resp = {
+            "error": "Invalid parameter value",
+            "message": "Analytes param only has one value - a mashup index score requires two"
+        }
+        return jsonify(resp), 400
+        
+    
     if not all([isinstance(a, dict) for a in analytes]):
         resp = {
             "error": "Invalid parameter value",
@@ -595,6 +603,7 @@ def getdata():
     
     resp = {
         "sitename"             : sitename,
+        "bmpname"              : firstbmp,
         "firstbmp"             : firstbmp,
         "lastbmp"              : lastbmp,
         "analytes"             : analytes,
