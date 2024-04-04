@@ -225,6 +225,13 @@ def threshvals():
     analyte = request.args.get('analyte')
     inflow_or_outflow = request.args.get('inflow_or_outflow', 'inflow')
     
+    print(f"sitename: {sitename}")
+    print(f"firstbmp: {firstbmp}")
+    print(f"percentile: {percentile}")
+    print(f"bmptype: {bmptype}")
+    print(f"inflow_or_outflow: {inflow_or_outflow}")
+    print(f"analyte: {analyte}")
+    
     if inflow_or_outflow not in ('inflow','outflow'):
         return jsonify({"error": "Invalid query string arg", "message": "inflow_or_outflow arg must be 'inflow' or 'outflow'"}), 400
     
@@ -298,13 +305,13 @@ def threshvals():
         FROM 
             vw_mashup_index_comparison_rawdata
         WHERE 
-            analyte = '{analyte}'
+            analyte = '{analyte}' 
     """
         
     if bmptype is None:
         mainqry += f"""
-            AND sitename ~ '{sitename}'
-            AND firstbmp ~ '{firstbmp}'
+            AND sitename = '{sitename}'
+            AND firstbmp = '{firstbmp}'
         """
     else:
         mainqry += f"""
@@ -313,6 +320,8 @@ def threshvals():
     
     threshvallist = pd.read_sql(mainqry, eng).threshval.tolist()
     threshval = threshvallist[0] if len(threshvallist) > 0 else -88
+    
+    print(f"threshvallist: {threshvallist}")
     
     # return repsonse
     return jsonify(threshval=threshval)
@@ -419,7 +428,7 @@ def percentilevals():
             FROM vw_mashup_index_comparison_rawdata
             WHERE analyte = '{analyte}' 
             {
-                "AND sitename ~ '{}' AND firstbmp ~ '{}'".format(sitename, firstbmp) if bmptype is None else "AND firstbmptype = '{}'".format(bmptype)
+                "AND sitename = '{}' AND firstbmp = '{}'".format(sitename, firstbmp) if bmptype is None else "AND firstbmptype = '{}'".format(bmptype)
             }
         ),
         PercentileRank AS (
@@ -462,7 +471,7 @@ def getdata():
     #         "analytename"     : <actual name of the analyte>,
     #         "threshold_value" : <actual threshold value>,
     #         "unit" : <units of threshold value>,
-    #         "ranking"         : <user-defined analyte priority ranking>
+    #         "rank"         : <user-defined analyte priority rank>
     #     },
     #     ....
     # ]
@@ -483,10 +492,10 @@ def getdata():
         }
         return jsonify(resp), 400
     
-    if not all([set(a.keys()).issubset(set(['analytename','threshold_value','unit','ranking'])) for a in analytes]):
+    if not all([set(a.keys()).issubset(set(['analytename','threshold_value','unit','rank'])) for a in analytes]):
         resp = {
             "error": "Invalid parameter values",
-            "message": "all dictionaries in the analytes list must have attributes analytename, threshold_value, unit and ranking"
+            "message": "all dictionaries in the analytes list must have attributes analytename, threshold_value, unit and rank"
         }
         return jsonify(resp), 400
     
@@ -571,15 +580,15 @@ def getdata():
     # build rankings dictionary in a convenient way to tack on to the index df
     rankings_dict = dict()
     for a in analytes:
-        rankings_dict[a.get('analytename')] = a.get('ranking')
+        rankings_dict[a.get('analytename')] = a.get('rank')
     
-    wqindexdf['ranking'] = wqindexdf.analyte.apply(lambda a: rankings_dict.get(a))
+    wqindexdf['rank'] = wqindexdf.analyte.apply(lambda a: rankings_dict.get(a))
     
     # AHP needs the constituents and the rankings for each (numpy arrays)
-    wqindexdf['ahp_weights'] = calc_ahp_weights(wqindexdf.analyte.values, wqindexdf.ranking.values)
+    wqindexdf['ahp_weights'] = calc_ahp_weights(wqindexdf.analyte.values, wqindexdf['rank'].values)
 
     # Ranksum just needs the rankings (numpy array)
-    wqindexdf['ranksum_weights'] = calc_ranksum_weights(wqindexdf.ranking.values)
+    wqindexdf['ranksum_weights'] = calc_ranksum_weights(wqindexdf['rank'].values)
     
     ahpmash = mashup_index(wqindexdf.performance_index.values, wqindexdf.ahp_weights.values)
     rankmash = mashup_index(wqindexdf.performance_index.values, wqindexdf.ranksum_weights.values)

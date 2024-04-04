@@ -3,6 +3,9 @@ import * as d3 from 'd3';
 import ColorPicker from './components/ColorPicker';
 import AnalyteRow from './components/AnalyteRow';
 import DropdownSelector from './components/DropdownSelector';
+import IndexComparisonChart from './components/IndexComparisonChart'
+
+import useLocalStorage from './hooks/useLocalStorage';
 
 import './styles/generic.css'
 import '../node_modules/bootstrap/dist/css/bootstrap.min.css';
@@ -12,6 +15,7 @@ function App() {
     // State management
     const [ahpColor, setAhpColor] = useState('#00FF00');
     const [ranksumColor, setRanksumColor] = useState('#0000FF');
+    const [threshColor, setThreshColor] = useState('#000000');
     const [showAnalytes, setShowAnalytes] = useState(true);
 
     const [siteNames, setSiteNames] = useState([]);
@@ -20,7 +24,29 @@ function App() {
     const [selectedBmpName, setSelectedBmpName] = useState('');
     const [analytes, setAnalytes] = useState([]);
 
+    const [activeAnalytes, setActiveAnalytes] = useState([]);
+    const [plotData, setPlotData] = useLocalStorage('bmpIndexComparisonPlotData', []);
+
+
     const [universalThreshPercentile, setUniversalThreshPercentile] = useState(0.25);
+
+    function updatePlotData() {
+        fetch(
+            'getdata',
+            {
+                method: 'post',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    sitename: selectedSiteName,
+                    bmpname: selectedBmpName,
+                    analytes: activeAnalytes
+                })
+            })
+            .then(resp => resp.json())
+            .then(data => setPlotData( (d) => [...d, data] ))
+    }
 
 
     // Fetch Site Names
@@ -58,15 +84,17 @@ function App() {
             .then((data) => {
                 console.log('analytes')
                 console.log(data)
-                setAnalytes(data.analytes);
+                setAnalytes((a) => data.analytes);
+                setActiveAnalytes([]); // reset
             });
     }, [selectedSiteName, selectedBmpName]);
+
 
     return (
         <div className="container my-4">
             <h2 className="mb-3">Data Visualization Controls</h2>
-            <div className="row">
-                <div className="col-md-4 mb-3">
+            <div className="row mb-3">
+                <div className="col-md-6">
                     <DropdownSelector
                         id="sitename-select"
                         label="Site Name"
@@ -76,7 +104,7 @@ function App() {
                     />
                 </div>
 
-                <div className="col-md-4 mb-3">
+                <div className="col-md-6">
                     <DropdownSelector
                         id="bmp-select"
                         label="BMP Name"
@@ -86,9 +114,9 @@ function App() {
                     />
                 </div>
             </div>
-            <div class="row">
+            <div class="row mb-3">
                 {/* Assume ColorPicker supports Bootstrap styling; otherwise, adapt it */}
-                <div className="col-md-4 mb-3">
+                <div className="col-md-4">
                     <ColorPicker
                         label="AHP Score Color"
                         id="ahp-color-picker"
@@ -98,7 +126,7 @@ function App() {
                     />
                 </div>
 
-                <div className="col-md-4 mb-3">
+                <div className="col-md-4">
                     <ColorPicker
                         label="Ranksum Score Color"
                         id="ranksum-color-picker"
@@ -107,9 +135,19 @@ function App() {
                         onChange={(e) => setRanksumColor(e.target.value)}
                     />
                 </div>
+
+                <div className="col-md-4">
+                    <ColorPicker
+                        label="Thresh Comparison Color"
+                        id="thresh-color-picker"
+                        name="thresh-color-picker"
+                        color={threshColor}
+                        onChange={(e) => setThreshColor(e.target.value)}
+                    />
+                </div>
             </div>
-            <div class="row">
-                <div className="col-12 mb-3">
+            <div class="row mb-3">
+                <div className="col-12">
                     <div className="form-check">
                         <input
                             type="checkbox"
@@ -125,8 +163,8 @@ function App() {
                 </div>
             </div>
 
-            <div class="row">
-                <div className="col-6 mb-3 form-check">
+            <div class="row mb-3">
+                <div className="col-3 form-check">
                     <label htmlFor="universal-thresh-setter">Set all threshold percentiles to:</label>
                     <input
                         id="universal-thresh-setter"
@@ -138,6 +176,44 @@ function App() {
                         value={universalThreshPercentile}
                         onChange={(e) => setUniversalThreshPercentile(Number(e.target.value))}
                     />
+
+                </div>
+                <div className="col-3 form-check">
+                    <button
+                        id="add-data-btn"
+                        className="btn btn-primary"
+                        onClick={updatePlotData}
+                    >
+                        Add data to plots
+                    </button>
+
+                </div>
+                <div className="col-3 form-check">
+                    <button
+                        id="delete-current-data-btn"
+                        className="btn btn-primary"
+                        onClick={(e) => {
+                            const confirmed = confirm(`Are you sure you want to clear existing data for site ${selectedSiteName} and BMP ${selectedBmpName} ?`)
+                            if (!confirmed) return;
+                            setPlotData((d) => d.filter(i => ((i.sitename != selectedSiteName) & (i.firstbmp != selectedBmpName)) ))
+                        }}
+                    >
+                        Clear Plot Data for current site
+                    </button>
+
+                </div>
+                <div className="col-3 form-check">
+                    <button
+                        id="delete-all-data-btn"
+                        className="btn btn-primary"
+                        onClick={(e) => {
+                            const confirmed = confirm(`Are you sure you want to clear existing data for all sites?`)
+                            if (!confirmed) return;
+                            setPlotData([])
+                        }}
+                    >
+                        Clear Plot data for all sites
+                    </button>
 
                 </div>
             </div>
@@ -165,6 +241,7 @@ function App() {
                                     unit={analyte.unit}
                                     initialRank={index + 1}
                                     universalThreshPercentile={universalThreshPercentile}
+                                    setActiveAnalytes={setActiveAnalytes} // so the checkbox can affect the active analytes
                                 />
                             ))}
                         </tbody>
@@ -172,8 +249,9 @@ function App() {
                 </div>
             )}
 
-            <div id="chart" className="mt-5">
-                {/* Chart integration remains the same */}
+            <div id="index-comparison-chart" className="mt-5">
+                <div class="chart-label" style={{textAlign: 'center', fontSize: '20px'}}>Ranksum vs AHP Comparison plot</div>
+                <IndexComparisonChart plotData={plotData} ahpColor={ahpColor} ranksumColor={ranksumColor}/>
             </div>
         </div>
     );

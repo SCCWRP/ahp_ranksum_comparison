@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import '../styles/generic.css'
 import '../../node_modules/bootstrap/dist/css/bootstrap.min.css'
 
-function AnalyteRow({ siteName, bmpName, analytename, initialThreshPercentile = 0.25, unit, initialRank, universalThreshPercentile = 0.25}) {
+function AnalyteRow({ siteName, bmpName, analytename, initialThreshPercentile = 0.25, unit, initialRank, universalThreshPercentile = 0.25, setActiveAnalytes }) {
     const [isEnabled, setIsEnabled] = useState(true);
     const [rank, setRank] = useState(initialRank);
     const [threshPercentile, setThreshPercentile] = useState(initialThreshPercentile);
@@ -13,16 +13,46 @@ function AnalyteRow({ siteName, bmpName, analytename, initialThreshPercentile = 
     const [userUpdatedThreshVal, setUserUpdatedThreshVal] = useState(false);
 
 
+    // Inside AnalyteRow component
+
     function handleCheckboxChange() {
-        setIsEnabled(!isEnabled); // Toggle the enabled/disabled state
+        setIsEnabled(prev => !prev); // Toggle the enabled/disabled state locally
+
+        // Then update the activeAnalytes list in the parent component
+        if (isEnabled) {
+            // If it was enabled before, now remove it from the active list
+            setActiveAnalytes(prev => prev.filter(a => a.analytename !== analytename));
+        } else {
+            // If it was disabled before, now add it back to the active list
+            // You might want to include more data here depending on your needs
+            setActiveAnalytes(prev => [...prev, { analytename: analytename, unit: unit, threshold_value: threshVal, rank: rank }]);
+        }
     }
+
+    // add to active analytes when the component mounts
+    useEffect(() => {
+        setActiveAnalytes(prev => [...prev, { analytename: analytename, unit: unit, threshold_value: threshVal, rank: rank }]);
+    }, [])
+
+
+    useEffect(() => {
+        // Update the matching analyte in the activeAnalytes array
+        setActiveAnalytes(prev => prev.map(analyte =>
+            analyte.analytename === analytename
+                ? { ...analyte, threshold_value: threshVal, rank: rank }
+                : analyte
+        ));
+    }, [threshVal, rank])
+
+
+
 
     useEffect(() => {
         // Only update if there's no user-made change detected; you might need additional logic to track this
         setThreshPercentile(universalThreshPercentile);
         setUserUpdatedPercentile(true);
     }, [universalThreshPercentile]);
-    
+
 
     // Fetch threshvalue
     useEffect(() => {
@@ -33,16 +63,6 @@ function AnalyteRow({ siteName, bmpName, analytename, initialThreshPercentile = 
                 setThreshVal((t) => Math.round(data.threshval * 100) / 100)
             });
     }, []);
-
-    // Fetch threshvalue
-    useEffect(() => {
-        fetch(`percentileval?sitename=${encodeURIComponent(siteName)}&bmpname=${encodeURIComponent(bmpName)}&analyte=${encodeURIComponent(analytename)}&threshval=${encodeURIComponent(threshVal)}`) // Your API endpoint for fetching site names
-            .then((response) => response.json())
-            .then((data) => {
-                console.log(data)
-            });
-    }, []);
-
 
 
     // Fetch threshval when threshPercentile changes
@@ -65,6 +85,7 @@ function AnalyteRow({ siteName, bmpName, analytename, initialThreshPercentile = 
             };
             fetchThreshVal();
         }
+
     }, [threshPercentile, siteName, bmpName, analytename, userUpdatedPercentile]);
 
     // Fetch threshPercentile when threshVal changes
@@ -87,6 +108,15 @@ function AnalyteRow({ siteName, bmpName, analytename, initialThreshPercentile = 
             };
             fetchThreshPercentile();
         }
+
+        // Update the matching analyte in the activeAnalytes array
+        setActiveAnalytes(prev => prev.map(analyte =>
+            analyte.analytename === analytename
+                ? { ...analyte, threshold_value: threshVal, rank: rank }
+                : analyte
+        ));
+
+
     }, [threshVal, siteName, bmpName, analytename, userUpdatedThreshVal]);
 
     return (
@@ -107,7 +137,8 @@ function AnalyteRow({ siteName, bmpName, analytename, initialThreshPercentile = 
             <td>{unit}</td>
             <td>
                 <input type="number" className="form-control" value={rank}
-                    onChange={(e) => setRank(Number(e.target.value))} />
+                    onChange={(e) => {setRank(Number(e.target.value));}
+                    } />
             </td>
         </tr>
     );
