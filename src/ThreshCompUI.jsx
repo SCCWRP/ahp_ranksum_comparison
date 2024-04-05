@@ -19,11 +19,9 @@ function ThreshCompUI({siteName, bmpName, analytes, activeAnalytes, setActiveAna
     const [ranksumColor, setRanksumColor] = useState('#0000FF');
 
     const [showAnalytes, setShowAnalytes] = useState(true);
-    
-    
+        
     const [plotData, setPlotData] = useLocalStorage('bmpIndexComparisonPlotData', []);
 
-    const [universalThreshPercentile, setUniversalThreshPercentile] = useState(0.25);
 
 
     function updatePlotData() {
@@ -40,7 +38,7 @@ function ThreshCompUI({siteName, bmpName, analytes, activeAnalytes, setActiveAna
             if (!confirmed) return;
         }
 
-        fetch('getdata', {
+        fetch('threshcomparison', {
             method: 'post',
             headers: {
                 'Content-Type': 'application/json'
@@ -48,7 +46,8 @@ function ThreshCompUI({siteName, bmpName, analytes, activeAnalytes, setActiveAna
             body: JSON.stringify({
                 sitename: siteName,
                 bmpname: bmpName,
-                analytes: activeAnalytes
+                analytes: activeAnalytes,
+                thresholds: thresholds // to later be created - i anticipate to be an array of threshold percentiles
             })
         })
             .then(async response => {

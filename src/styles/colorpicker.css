@@ -1,0 +1,10 @@
+.color-picker-container {
+    display: flex;
+    align-items: center; /* This will vertically center the items */
+    gap: 8px; /* Adds space between the label and the color picker */
+  }
+  
+  .color-picker-label {
+    margin-bottom: 0; /* Remove any default margin that might offset the label */
+  }
+  

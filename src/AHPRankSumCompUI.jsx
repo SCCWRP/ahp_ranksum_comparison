@@ -93,7 +93,7 @@ function AHPRankSumCompUI({siteName, bmpName}) {
 
 
     return (<div className="container my-1">
-        <div class="row mb-4">
+        <div class="row mb-5">
             {/* Assume ColorPicker supports Bootstrap styling; otherwise, adapt it */}
             <div className="col-md-4">
                 <ColorPicker
@@ -118,7 +118,7 @@ function AHPRankSumCompUI({siteName, bmpName}) {
         </div>
 
 
-        <div class="row mb-4 d-flex align-items-end">
+        <div class="row mb-5 d-flex align-items-end">
             <div className="col-3 form-check d-flex flex-column">
                 <label htmlFor="universal-thresh-setter">Set all threshold percentiles to:</label>
                 <input

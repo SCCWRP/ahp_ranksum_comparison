@@ -53,9 +53,9 @@ function App() {
 
     return (
         <>
-            <div className="container my-4">
-                <h2 className="mb-3">BMP Mashup Performance Index Comparison Tool</h2>
-                <div className="row mb-3">
+            <div className="container mt-4 mb-1">
+                <h2 className="mb-5">BMP Mashup Performance Index Comparison Tool</h2>
+                <div className="row mt-4 mb-1">
                     <div className="col-md-6">
                         <DropdownSelector
                             id="sitename-select"
