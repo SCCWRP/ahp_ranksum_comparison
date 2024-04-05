@@ -31,15 +31,15 @@ function App() {
     const [universalThreshPercentile, setUniversalThreshPercentile] = useState(0.25);
 
     function updatePlotData() {
-        
-        if (activeAnalytes.length < 2){
+
+        if (activeAnalytes.length < 2) {
             alert("Mashup score cannot be calculated with less than 2 parameters")
             return;
         }
 
         const consecutiveRankings = ((activeAnalytes.map((a) => a.rank).reduce((prev, cur) => prev + cur, 0)) === (activeAnalytes.length * (activeAnalytes.length + 1) * 0.5));
 
-        if (!consecutiveRankings){
+        if (!consecutiveRankings) {
             const confirmed = confirm("Priority ranking values are not consecutive integers, which may produce unexpected results. Do you wish to proceed?")
             if (!confirmed) return;
         }
@@ -55,33 +55,33 @@ function App() {
                 analytes: activeAnalytes
             })
         })
-        .then(async response => {
-            // Check if the response is ok (status in the range 200-299)
-            if (!response.ok) {
-                // Try to parse the error body
-                const errorBody = await response.json();
-                // Throw an object that includes both the status and the parsed body
-                throw { status: response.status, ...errorBody };
-            }
-            return response.json();
-        })
-        .then(data => setPlotData(d => [...d, data]))
-        .catch(error => {
-            // Check if it's an expected error structure
-            if (error.status && error.message) {
-                console.error(`Fetch error (${error.status}): ${error.message}`);
-                // If 'error.error' or similar contains additional info, log it as well
-                if (error.error) {
-                    console.error(`Error details: ${error.error}`);
+            .then(async response => {
+                // Check if the response is ok (status in the range 200-299)
+                if (!response.ok) {
+                    // Try to parse the error body
+                    const errorBody = await response.json();
+                    // Throw an object that includes both the status and the parsed body
+                    throw { status: response.status, ...errorBody };
                 }
-            } else {
-                // For unexpected errors (e.g., network errors), log the whole error
-                console.error('Unexpected error:', error);
-            }
-        });
+                return response.json();
+            })
+            .then(data => setPlotData(d => [...d, data]))
+            .catch(error => {
+                // Check if it's an expected error structure
+                if (error.status && error.message) {
+                    console.error(`Fetch error (${error.status}): ${error.message}`);
+                    // If 'error.error' or similar contains additional info, log it as well
+                    if (error.error) {
+                        console.error(`Error details: ${error.error}`);
+                    }
+                } else {
+                    // For unexpected errors (e.g., network errors), log the whole error
+                    console.error('Unexpected error:', error);
+                }
+            });
     }
-    
-    
+
+
 
 
     // Fetch Site Names
@@ -125,7 +125,7 @@ function App() {
 
     return (
         <div className="container my-4">
-            <h2 className="mb-3">Data Visualization Controls</h2>
+            <h2 className="mb-3">BMP Mashup Performance Index Comparison Tool</h2>
             <div className="row mb-3">
                 <div className="col-md-6">
                     <DropdownSelector
@@ -179,6 +179,66 @@ function App() {
                     />
                 </div>
             </div>
+            
+
+            <div class="row mb-3 d-flex align-items-end">
+                <div className="col-3 form-check d-flex flex-column">
+                    <label htmlFor="universal-thresh-setter">Set all threshold percentiles to:</label>
+                    <input
+                        id="universal-thresh-setter"
+                        className="form-control"
+                        type="number"
+                        step="0.1"
+                        min="0"
+                        max="1"
+                        value={universalThreshPercentile}
+                        onChange={(e) => setUniversalThreshPercentile(Number(e.target.value))}
+                    />
+
+                </div>
+                <div className="col-3 form-check d-flex flex-column">
+                    <div className="mt-auto"> 
+                        <button
+                            id="add-data-btn"
+                            className="btn btn-primary"
+                            onClick={updatePlotData}
+                        >
+                            Add data to plots
+                        </button>
+                    </div>
+                </div>
+                <div className="col-3 form-check d-flex flex-column">
+                    <div className="mt-auto"> 
+                        <button
+                            id="delete-current-data-btn"
+                            className="btn btn-primary"
+                            onClick={(e) => {
+                                const confirmed = confirm(`Are you sure you want to clear existing data for site ${selectedSiteName} and BMP ${selectedBmpName} ?`)
+                                if (!confirmed) return;
+                                setPlotData((d) => d.filter(i => ((i.sitename != selectedSiteName) & (i.bmpname != selectedBmpName))))
+                            }}
+                        >
+                            Clear Plot Data for current site
+                        </button>
+                    </div>
+                </div>
+                <div className="col-3 form-check d-flex flex-column">
+                    <div className="mt-auto"> 
+                        <button
+                            id="delete-all-data-btn"
+                            className="btn btn-primary"
+                            onClick={(e) => {
+                                const confirmed = confirm(`Are you sure you want to clear existing data for all sites?`)
+                                if (!confirmed) return;
+                                setPlotData([])
+                            }}
+                        >
+                            Clear Plot data for all sites
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             <div class="row mb-3">
                 <div className="col-12">
                     <div className="form-check">
@@ -196,60 +256,6 @@ function App() {
                 </div>
             </div>
 
-            <div class="row mb-3">
-                <div className="col-3 form-check">
-                    <label htmlFor="universal-thresh-setter">Set all threshold percentiles to:</label>
-                    <input
-                        id="universal-thresh-setter"
-                        className="form-control"
-                        type="number"
-                        step="0.1"
-                        min="0"
-                        max="1"
-                        value={universalThreshPercentile}
-                        onChange={(e) => setUniversalThreshPercentile(Number(e.target.value))}
-                    />
-
-                </div>
-                <div className="col-3 form-check">
-                    <button
-                        id="add-data-btn"
-                        className="btn btn-primary"
-                        onClick={updatePlotData}
-                    >
-                        Add data to plots
-                    </button>
-
-                </div>
-                <div className="col-3 form-check">
-                    <button
-                        id="delete-current-data-btn"
-                        className="btn btn-primary"
-                        onClick={(e) => {
-                            const confirmed = confirm(`Are you sure you want to clear existing data for site ${selectedSiteName} and BMP ${selectedBmpName} ?`)
-                            if (!confirmed) return;
-                            setPlotData((d) => d.filter(i => ((i.sitename != selectedSiteName) & (i.bmpname != selectedBmpName)) ))
-                        }}
-                    >
-                        Clear Plot Data for current site
-                    </button>
-
-                </div>
-                <div className="col-3 form-check">
-                    <button
-                        id="delete-all-data-btn"
-                        className="btn btn-primary"
-                        onClick={(e) => {
-                            const confirmed = confirm(`Are you sure you want to clear existing data for all sites?`)
-                            if (!confirmed) return;
-                            setPlotData([])
-                        }}
-                    >
-                        Clear Plot data for all sites
-                    </button>
-
-                </div>
-            </div>
 
             {(
                 <div className="table-responsive">
@@ -283,8 +289,8 @@ function App() {
             )}
 
             <div id="index-comparison-chart" className="mt-5">
-                <div class="chart-label" style={{textAlign: 'center', fontSize: '20px'}}>Ranksum vs AHP Comparison plot</div>
-                <IndexComparisonChart plotData={plotData.filter((d) => ((d.sitename == selectedSiteName) & (d.bmpname == selectedBmpName)))} ahpColor={ahpColor} ranksumColor={ranksumColor}/>
+                <div class="chart-label" style={{ textAlign: 'center', fontSize: '20px' }}>Ranksum vs AHP Comparison plot</div>
+                <IndexComparisonChart plotData={plotData.filter((d) => ((d.sitename == selectedSiteName) & (d.bmpname == selectedBmpName)))} ahpColor={ahpColor} ranksumColor={ranksumColor} />
             </div>
         </div>
     );
