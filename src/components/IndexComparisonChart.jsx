@@ -3,13 +3,29 @@ import * as d3 from 'd3';
 
 import debounce from '../utils/debounce';
 
-const IndexComparisonChart = ({ title, plotData, ahpColor, ranksumColor, debounceResizeTime = 250, topMargin = 35, bottomMargin = 30, leftMargin = 60, rightMargin = 20 }) => { // Adjusted leftMargin for Y axis label space
+const IndexComparisonChart = ({
+    title,
+    plotData,
+    ahpColor,
+    ranksumColor,
+    debounceResizeTime = 250,
+    topMargin = 35,
+    bottomMargin = 30,
+    leftMargin = 60,
+    rightMargin = 20,
+    xAxisTickFontSize = "14px",
+    yAxisTickFontSize = "14px",
+    xAxisLabelFontSize = "20px",
+    yAxisLabelFontSize = "20px"
+}
+) => { // Adjusted leftMargin for Y axis label space
     const [plotWidth, setPlotWidth] = useState(window.innerWidth * 0.85)
     const [plotHeight, setPlotHeight] = useState(plotWidth * (9 / 16))
 
     useEffect(() => {
         const handleResize = debounce(() => {
-            setPlotWidth(window.innerWidth * 0.85);
+            // Make the Plot the same width as the parent container
+            setPlotWidth(d3.select(d3.select(d3Container.current).node().parentNode).node().getBoundingClientRect().width)
         }, debounceResizeTime);
 
         window.addEventListener('resize', handleResize);
@@ -26,6 +42,12 @@ const IndexComparisonChart = ({ title, plotData, ahpColor, ranksumColor, debounc
     useEffect(() => {
         if (plotData && d3Container.current) {
             d3.select(d3Container.current).selectAll("*").remove();
+
+            // Make the Plot the same width as the parent container
+            setPlotWidth(d3.select(d3.select(d3Container.current).node().parentNode).node().getBoundingClientRect().width)
+
+            // Make the Plot the same width as the parent container
+            setPlotWidth(d3.select(d3.select(d3Container.current).node().parentNode).node().getBoundingClientRect().width)
 
             const margin = { top: topMargin, right: rightMargin, bottom: bottomMargin, left: leftMargin },
                 width = plotWidth - margin.left - margin.right,
@@ -59,7 +81,9 @@ const IndexComparisonChart = ({ title, plotData, ahpColor, ranksumColor, debounc
 
             svg.append("g")
                 .attr("transform", `translate(0,${height})`)
-                .call(d3.axisBottom(x).tickValues(uniqueTickValues).tickFormat(d3.format('d')));
+                .call(d3.axisBottom(x).tickValues(uniqueTickValues).tickFormat(d3.format('d')))
+                .selectAll(".tick text")  // Selects all text elements within .tick groups
+                .style("font-size", xAxisTickFontSize);  // Sets the font size to 16px
 
 
             // X axis label
@@ -67,6 +91,7 @@ const IndexComparisonChart = ({ title, plotData, ahpColor, ranksumColor, debounc
                 .attr("x", width / 2)
                 .attr("y", height + (margin.top / 2) + (margin.bottom / 2) + 1)
                 .style("text-anchor", "middle")
+                .style("font-size", xAxisLabelFontSize)
                 .text("Number of Parameters");
 
             const y = d3.scaleLinear()
@@ -76,7 +101,9 @@ const IndexComparisonChart = ({ title, plotData, ahpColor, ranksumColor, debounc
                 ])
                 .range([height, 0]);
             svg.append("g")
-                .call(d3.axisLeft(y));
+                .call(d3.axisLeft(y))
+                .selectAll(".tick text")  // Selects all text elements within .tick groups
+                .style("font-size", yAxisTickFontSize);  // Sets the font size to 16px
 
             // Y axis label
             svg.append("text")
@@ -85,6 +112,7 @@ const IndexComparisonChart = ({ title, plotData, ahpColor, ranksumColor, debounc
                 .attr("x", 0 - (height / 2))
                 .attr("dy", "1em")
                 .style("text-anchor", "middle")
+                .style("font-size", yAxisLabelFontSize)
                 .text("Mashup Index Score Value");
 
             svg.selectAll(".dot-ahp")

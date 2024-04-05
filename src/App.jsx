@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import * as d3 from 'd3';
+
+// Component Imports
 import ColorPicker from './components/ColorPicker';
-import AnalyteRow from './components/AnalyteRow';
+import AnalyteTable from './components/AnalyteTable';
 import DropdownSelector from './components/DropdownSelector';
 import IndexComparisonChart from './components/IndexComparisonChart'
 
+// Custom Hooks
 import useLocalStorage from './hooks/useLocalStorage';
 
+// Styles
 import './styles/generic.css'
 import '../node_modules/bootstrap/dist/css/bootstrap.min.css';
 
@@ -179,7 +182,7 @@ function App() {
                     />
                 </div>
             </div>
-            
+
 
             <div class="row mb-3 d-flex align-items-end">
                 <div className="col-3 form-check d-flex flex-column">
@@ -197,7 +200,7 @@ function App() {
 
                 </div>
                 <div className="col-3 form-check d-flex flex-column">
-                    <div className="mt-auto"> 
+                    <div className="mt-auto">
                         <button
                             id="add-data-btn"
                             className="btn btn-primary"
@@ -208,7 +211,7 @@ function App() {
                     </div>
                 </div>
                 <div className="col-3 form-check d-flex flex-column">
-                    <div className="mt-auto"> 
+                    <div className="mt-auto">
                         <button
                             id="delete-current-data-btn"
                             className="btn btn-primary"
@@ -223,7 +226,7 @@ function App() {
                     </div>
                 </div>
                 <div className="col-3 form-check d-flex flex-column">
-                    <div className="mt-auto"> 
+                    <div className="mt-auto">
                         <button
                             id="delete-all-data-btn"
                             className="btn btn-primary"
@@ -257,36 +260,15 @@ function App() {
             </div>
 
 
-            {(
-                <div className="table-responsive">
-                    <table className="table" style={{ display: showAnalytes ? 'table' : 'none' }}>
-                        <thead>
-                            <tr>
-                                <th scope="col"></th> {/* For checkbox without header */}
-                                <th scope="col">Analyte Name</th>
-                                <th scope="col">Threshold Percentile</th>
-                                <th scope="col">Threshold Value</th>
-                                <th scope="col">Unit</th>
-                                <th scope="col">Priority Ranking</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {analytes.map((analyte, index) => (
-                                <AnalyteRow
-                                    key={index}
-                                    siteName={selectedSiteName}
-                                    bmpName={selectedBmpName}
-                                    analytename={analyte.analytename}
-                                    unit={analyte.unit}
-                                    initialRank={index + 1}
-                                    universalThreshPercentile={universalThreshPercentile}
-                                    setActiveAnalytes={setActiveAnalytes} // so the checkbox can affect the active analytes
-                                />
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            )}
+            <AnalyteTable
+                showAnalytes={showAnalytes}
+                analytes={analytes}
+                selectedSiteName={selectedSiteName}
+                selectedBmpName={selectedBmpName}
+                universalThreshPercentile={universalThreshPercentile}
+                setActiveAnalytes={setActiveAnalytes}
+            />
+
 
             <div id="index-comparison-chart" className="mt-5">
                 <div class="chart-label" style={{ textAlign: 'center', fontSize: '20px' }}>Ranksum vs AHP Comparison plot</div>
