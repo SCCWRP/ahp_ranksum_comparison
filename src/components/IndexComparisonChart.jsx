@@ -49,14 +49,18 @@ const IndexComparisonChart = ({ title, plotData, ahpColor, ranksumColor, debounc
             const x = d3.scaleLinear()
                 .domain([1, d3.max(plotData, d => d.n_params)])
                 .range([0, width]);
-            
-            // Generate unique integer tick values from the plotData
-            const uniqueTickValues = Array.from(new Set(plotData.map(d => Math.floor(d.n_params)))).sort((a, b) => a - b);
-            
+
+            // Find the maximum value of d.n_params in plotData
+            const maxValue = Math.max(...plotData.map(d => d.n_params));
+
+            // Generate an array of integers from 1 to maxValue
+            const uniqueTickValues = Array.from({ length: maxValue }, (_, i) => i + 1);
+
+
             svg.append("g")
                 .attr("transform", `translate(0,${height})`)
                 .call(d3.axisBottom(x).tickValues(uniqueTickValues).tickFormat(d3.format('d')));
-            
+
 
             // X axis label
             svg.append("text")
