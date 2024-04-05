@@ -164,3 +164,65 @@ function AnalyteRow({ siteName, bmpName, analytename, initialThreshPercentile = 
 }
 
 export default AnalyteRow;
+
+
+
+export function SimpleAnalyteRow({ siteName, bmpName, analytename, initialThreshPercentile = 0.25, unit, initialRank, universalThreshPercentile = 0.25, setActiveAnalytes }) {
+    const [isEnabled, setIsEnabled] = useState(true);
+    const [rank, setRank] = useState(initialRank);
+
+    // Inside AnalyteRow component
+
+    function handleCheckboxChange() {
+        setIsEnabled(prev => !prev); // Toggle the enabled/disabled state locally
+
+        // Then update the activeAnalytes list in the parent component
+        if (isEnabled) {
+            // If it was enabled before, now remove it from the active list
+            setActiveAnalytes(prev => prev.filter(a => a.analytename !== analytename));
+        } else {
+            // If it was disabled before, now add it back to the active list
+            // You might want to include more data here depending on your needs
+            setActiveAnalytes(prev => [...prev, { analytename: analytename, unit: unit, rank: rank }]);
+        }
+    }
+
+    // add to active analytes when the component mounts
+    useEffect(() => {
+        setActiveAnalytes(prev => [...prev, { analytename: analytename, unit: unit, rank: rank }]);
+    }, [])
+
+
+    useEffect(() => {
+        // Update the matching analyte in the activeAnalytes array
+        setActiveAnalytes(prev => prev.map(analyte =>
+            analyte.analytename === analytename
+                ? { ...analyte, rank: rank }
+                : analyte
+        ));
+    }, [rank])
+
+    return (
+        <tr style={{ opacity: isEnabled ? 1 : 0.5 }}>
+            <td>
+                <input type="checkbox" checked={isEnabled} onChange={handleCheckboxChange} />
+            </td>
+            <td>{analytename}</td>
+            <td>
+                <input type="number" className="form-control" value={threshPercentile}
+                    onChange={(e) => { setThreshPercentile(Number(e.target.value)); setUserUpdatedPercentile(true); }}
+                    step="0.01" min="0" max="1" />
+            </td>
+            <td>
+                <input type="number" className="form-control" value={threshVal}
+                    onChange={(e) => { setThreshVal(Number(e.target.value)); setUserUpdatedThreshVal(true); }} />
+            </td>
+            <td>{unit}</td>
+            <td>
+                <input type="number" className="form-control" value={rank}
+                    onChange={(e) => { setRank(Number(e.target.value)); }
+                    } />
+            </td>
+        </tr>
+    );
+}

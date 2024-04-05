@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 // Component imports
 import IndexComparisonChart from './components/IndexComparisonChart'
 import ColorPicker from './components/ColorPicker';
-import AnalyteTable from './components/AnalyteTable';
+import { SimpleAnalyteTable } from './components/AnalyteTable';
 
 // Custom Hooks
 import useLocalStorage from './hooks/useLocalStorage';
@@ -12,32 +12,18 @@ import useLocalStorage from './hooks/useLocalStorage';
 import './styles/generic.css'
 import '../node_modules/bootstrap/dist/css/bootstrap.min.css';
 
-function AHPRankSumCompUI({siteName, bmpName}) {
+function ThreshCompUI({siteName, bmpName, analytes, activeAnalytes, setActiveAnalytes}) {
 
     // State management
     const [ahpColor, setAhpColor] = useState('#00FF00');
     const [ranksumColor, setRanksumColor] = useState('#0000FF');
 
     const [showAnalytes, setShowAnalytes] = useState(true);
-    const [analytes, setAnalytes] = useState([]);
-    const [activeAnalytes, setActiveAnalytes] = useState([]);
     
     
     const [plotData, setPlotData] = useLocalStorage('bmpIndexComparisonPlotData', []);
 
     const [universalThreshPercentile, setUniversalThreshPercentile] = useState(0.25);
-
-
-    // Fetch Analytes when a BMP name is selected
-    useEffect(() => {
-        if (!siteName || !bmpName) return;
-        fetch(`analytes?sitename=${encodeURIComponent(siteName)}&bmpname=${encodeURIComponent(bmpName)}`) // Your API endpoint for fetching analytes
-            .then((response) => response.json())
-            .then((data) => {
-                setAnalytes((a) => data.analytes);
-                setActiveAnalytes([]); // reset
-            });
-    }, [siteName, bmpName]);
 
 
     function updatePlotData() {
@@ -119,21 +105,8 @@ function AHPRankSumCompUI({siteName, bmpName}) {
 
 
         <div class="row mb-4 d-flex align-items-end">
-            <div className="col-3 form-check d-flex flex-column">
-                <label htmlFor="universal-thresh-setter">Set all threshold percentiles to:</label>
-                <input
-                    id="universal-thresh-setter"
-                    className="form-control"
-                    type="number"
-                    step="0.1"
-                    min="0"
-                    max="1"
-                    value={universalThreshPercentile}
-                    onChange={(e) => setUniversalThreshPercentile(Number(e.target.value))}
-                />
-
-            </div>
-            <div className="col-3 form-check d-flex flex-column">
+            
+            <div className="col-4 form-check d-flex flex-column">
                 <div className="mt-auto">
                     <button
                         id="add-data-btn"
@@ -144,7 +117,7 @@ function AHPRankSumCompUI({siteName, bmpName}) {
                     </button>
                 </div>
             </div>
-            <div className="col-3 form-check d-flex flex-column">
+            <div className="col-4 form-check d-flex flex-column">
                 <div className="mt-auto">
                     <button
                         id="delete-current-data-btn"
@@ -159,7 +132,7 @@ function AHPRankSumCompUI({siteName, bmpName}) {
                     </button>
                 </div>
             </div>
-            <div className="col-3 form-check d-flex flex-column">
+            <div className="col-4 form-check d-flex flex-column">
                 <div className="mt-auto">
                     <button
                         id="delete-all-data-btn"
@@ -194,7 +167,7 @@ function AHPRankSumCompUI({siteName, bmpName}) {
         </div>
 
 
-        <AnalyteTable
+        <SimpleAnalyteTable
             showAnalytes={showAnalytes}
             analytes={analytes}
             siteName={siteName}
@@ -211,4 +184,4 @@ function AHPRankSumCompUI({siteName, bmpName}) {
     </div>)
 }
 
-export default AHPRankSumCompUI;
+export default ThreshCompUI;

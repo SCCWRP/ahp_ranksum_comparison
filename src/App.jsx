@@ -12,14 +12,13 @@ import '../node_modules/bootstrap/dist/css/bootstrap.min.css';
 
 
 function App() {
-    
+
 
     const [siteNames, setSiteNames] = useState([]);
     const [selectedSiteName, setSelectedSiteName] = useState('');
     const [bmpNames, setBmpNames] = useState([]);
     const [selectedBmpName, setSelectedBmpName] = useState('');
-    const [analytes, setAnalytes] = useState([]);
-    const [activeAnalytes, setActiveAnalytes] = useState([]);
+    
 
 
     // Fetch Site Names
@@ -49,16 +48,7 @@ function App() {
             });
     }, [selectedSiteName]);
 
-    // Fetch Analytes when a BMP name is selected
-    useEffect(() => {
-        if (!selectedSiteName || !selectedBmpName) return;
-        fetch(`analytes?sitename=${encodeURIComponent(selectedSiteName)}&bmpname=${encodeURIComponent(selectedBmpName)}`) // Your API endpoint for fetching analytes
-            .then((response) => response.json())
-            .then((data) => {
-                setAnalytes((a) => data.analytes);
-                setActiveAnalytes([]); // reset
-            });
-    }, [selectedSiteName, selectedBmpName]);
+    
 
 
     return (
@@ -87,11 +77,12 @@ function App() {
                     </div>
                 </div>
             </div>
-            {
-                selectedSiteName && selectedBmpName &&
-                <AHPRankSumCompUI siteName={selectedSiteName} bmpName={selectedBmpName} analytes={analytes} activeAnalytes={activeAnalytes} setActiveAnalytes={setActiveAnalytes} />
-            }
-        
+
+
+
+            <AHPRankSumCompUI siteName={selectedSiteName} bmpName={selectedBmpName} />
+
+
         </>
     );
 }
