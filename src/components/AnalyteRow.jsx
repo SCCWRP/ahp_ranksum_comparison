@@ -56,11 +56,33 @@ function AnalyteRow({ siteName, bmpName, analytename, initialThreshPercentile = 
 
     // Fetch threshvalue
     useEffect(() => {
-        fetch(`threshval?sitename=${encodeURIComponent(siteName)}&bmpname=${encodeURIComponent(bmpName)}&analyte=${encodeURIComponent(analytename)}&percentile=${encodeURIComponent(threshPercentile)}`) // Your API endpoint for fetching site names
-            .then((response) => response.json())
-            .then((data) => {
-                setThreshVal((t) => Math.round(data.threshval * 100) / 100)
-            });
+        if (siteName && bmpName) {
+            fetch(`threshval?sitename=${encodeURIComponent(siteName)}&bmpname=${encodeURIComponent(bmpName)}&analyte=${encodeURIComponent(analytename)}&percentile=${encodeURIComponent(threshPercentile)}`) // Your API endpoint for fetching site names
+                .then(async response => {
+                    // Check if the response is ok (status in the range 200-299)
+                    if (!response.ok) {
+                        // Try to parse the error body
+                        const errorBody = await response.json();
+                        // Throw an object that includes both the status and the parsed body
+                        throw { status: response.status, ...errorBody };
+                    }
+                    return response.json();
+                })
+                .then(data => setThreshVal((t) => Math.round(data.threshval * 100) / 100))
+                .catch(error => {
+                    // Check if it's an expected error structure
+                    if (error.status && error.message) {
+                        console.error(`Fetch error (${error.status}): ${error.message}`);
+                        // If 'error.error' or similar contains additional info, log it as well
+                        if (error.error) {
+                            console.error(`Error details: ${error.error}`);
+                        }
+                    } else {
+                        // For unexpected errors (e.g., network errors), log the whole error
+                        console.error('Unexpected error:', error);
+                    }
+                });
+        }
     }, []);
 
 
@@ -134,7 +156,7 @@ function AnalyteRow({ siteName, bmpName, analytename, initialThreshPercentile = 
             <td>{unit}</td>
             <td>
                 <input type="number" className="form-control" value={rank}
-                    onChange={(e) => {setRank(Number(e.target.value));}
+                    onChange={(e) => { setRank(Number(e.target.value)); }
                     } />
             </td>
         </tr>

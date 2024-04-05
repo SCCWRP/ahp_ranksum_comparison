@@ -1,7 +1,7 @@
 import React from 'react';
 import AnalyteRow from './AnalyteRow'; // Assuming AnalyteRow is your component for rendering each row
 
-const AnalyteTable = ({ showAnalytes, analytes, selectedSiteName, selectedBmpName, universalThreshPercentile, setActiveAnalytes }) => {
+const AnalyteTable = ({ showAnalytes, analytes, siteName, bmpName, universalThreshPercentile, setActiveAnalytes }) => {
   return (
     <div className="table-responsive" style={{ display: showAnalytes ? 'block' : 'none' }}>
       <table className="table">
@@ -19,8 +19,8 @@ const AnalyteTable = ({ showAnalytes, analytes, selectedSiteName, selectedBmpNam
           {analytes.map((analyte, index) => (
             <AnalyteRow
               key={index}
-              siteName={selectedSiteName}
-              bmpName={selectedBmpName}
+              siteName={siteName}
+              bmpName={bmpName}
               analytename={analyte.analytename}
               unit={analyte.unit}
               initialRank={index + 1}
