@@ -34,6 +34,7 @@ const IndexComparisonChart = ({ title, plotData, ahpColor, ranksumColor, debounc
             const svg = d3.select(d3Container.current)
                 .attr("width", width + margin.left + margin.right)
                 .attr("height", height + margin.top + margin.bottom)
+                .attr("overflow", "visible")
                 .append("g")
                 .attr("transform", `translate(${margin.left},${margin.top})`);
 
@@ -60,7 +61,7 @@ const IndexComparisonChart = ({ title, plotData, ahpColor, ranksumColor, debounc
             // X axis label
             svg.append("text")
                 .attr("x", width / 2)
-                .attr("y", height + margin.bottom - 5)
+                .attr("y", height + (margin.top / 2) + (margin.bottom / 2) + 1)
                 .style("text-anchor", "middle")
                 .text("Number of Parameters");
 
