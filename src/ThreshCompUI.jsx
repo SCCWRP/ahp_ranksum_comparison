@@ -51,6 +51,24 @@ function ThreshCompUI({ siteName, bmpName }) {
 
     const [plotData, setPlotData] = useLocalStorage('bmpThreshComparisonPlotData', []);
 
+    // testing
+    useEffect(() => {
+        console.log("activeAnalytes")
+        console.log(activeAnalytes)
+    }, [activeAnalytes])
+
+    // Fetch Analytes when a BMP name is selected
+    useEffect(() => {
+        if (!siteName || !bmpName) return;
+        fetch(`analytes?sitename=${encodeURIComponent(siteName)}&bmpname=${encodeURIComponent(bmpName)}`) // Your API endpoint for fetching analytes
+            .then((response) => response.json())
+            .then((data) => {
+                console.log("Response from analytes API call:")
+                console.log(data)
+                setAnalytes((a) => data.analytes);
+                setActiveAnalytes([]); // reset
+            });
+    }, [siteName, bmpName]);
 
 
     function updatePlotData() {
@@ -67,7 +85,7 @@ function ThreshCompUI({ siteName, bmpName }) {
             if (!confirmed) return;
         }
 
-        fetch('threshcomparison', { // the threshcomparison route is to be created later
+        fetch('thresh-comparison-data', { // the threshcomparison route is to be created later
             method: 'post',
             headers: {
                 'Content-Type': 'application/json'
@@ -76,7 +94,7 @@ function ThreshCompUI({ siteName, bmpName }) {
                 sitename: siteName,
                 bmpname: bmpName,
                 analytes: activeAnalytes,
-                thresholds: thresholds // to later be created - i anticipate to be an array of threshold percentiles
+                thresholds: threshVals // should simply return a list of threshold percentile values
             })
         })
             .then(async response => {
@@ -89,7 +107,11 @@ function ThreshCompUI({ siteName, bmpName }) {
                 }
                 return response.json();
             })
-            .then(data => setPlotData(d => [...d, data]))
+            .then(data => {
+                console.log("data")
+                console.log(data)
+                setPlotData(d => [...d, data])
+            })
             .catch(error => {
                 // Check if it's an expected error structure
                 if (error.status && error.message) {
@@ -208,7 +230,7 @@ function ThreshCompUI({ siteName, bmpName }) {
 
 
         <div id="index-comparison-chart" className="mt-5">
-            <div class="chart-label" style={{ textAlign: 'center', fontSize: '20px' }}>Ranksum vs AHP Comparison plot</div>
+            <div class="chart-label" style={{ textAlign: 'center', fontSize: '20px' }}>Threshold Comparison Plot (simulating mashup scores for high/low performing BMPs)</div>
             {/* <IndexComparisonChart plotData={plotData.filter((d) => ((d.sitename == siteName) & (d.bmpname == bmpName)))} ahpColor={ahpColor} ranksumColor={ranksumColor} /> */}
         </div>
     </div>)

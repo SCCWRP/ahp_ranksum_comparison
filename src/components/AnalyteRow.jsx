@@ -208,15 +208,6 @@ export function SimpleAnalyteRow({ siteName, bmpName, analytename, initialThresh
                 <input type="checkbox" checked={isEnabled} onChange={handleCheckboxChange} />
             </td>
             <td>{analytename}</td>
-            <td>
-                <input type="number" className="form-control" value={threshPercentile}
-                    onChange={(e) => { setThreshPercentile(Number(e.target.value)); setUserUpdatedPercentile(true); }}
-                    step="0.01" min="0" max="1" />
-            </td>
-            <td>
-                <input type="number" className="form-control" value={threshVal}
-                    onChange={(e) => { setThreshVal(Number(e.target.value)); setUserUpdatedThreshVal(true); }} />
-            </td>
             <td>{unit}</td>
             <td>
                 <input type="number" className="form-control" value={rank}
