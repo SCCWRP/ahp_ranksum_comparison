@@ -2,25 +2,54 @@ import React, { useState, useEffect } from 'react';
 
 // Component imports
 import IndexComparisonChart from './components/IndexComparisonChart'
-import ColorPicker from './components/ColorPicker';
 import { SimpleAnalyteTable } from './components/AnalyteTable';
+import ThreshSelector from './components/ThreshSelector';
 
 // Custom Hooks
 import useLocalStorage from './hooks/useLocalStorage';
+
 
 // Styles
 import './styles/generic.css'
 import '../node_modules/bootstrap/dist/css/bootstrap.min.css';
 
-function ThreshCompUI({siteName, bmpName, analytes, activeAnalytes, setActiveAnalytes}) {
+function ThreshCompUI({ siteName, bmpName }) {
+
+    const THRESHOLD_VALUE_LOCALSTORAGE_KEY = "threshCompPercentilesAndPlotColors";
 
     // State management
-    const [ahpColor, setAhpColor] = useState('#00FF00');
-    const [ranksumColor, setRanksumColor] = useState('#0000FF');
+
+    // const [threshVals, setThreshVals] = useState(
+    const [threshVals, setThreshVals] = useLocalStorage(THRESHOLD_VALUE_LOCALSTORAGE_KEY, 
+        [
+            {
+                percentile: 0.1,
+                plotcolor: "#1705e3"
+            },
+            {
+                percentile: 0.25,
+                plotcolor: "#0595e3"
+            },
+            {
+                percentile: 0.5,
+                plotcolor: "#05e374"
+            },
+            {
+                percentile: 0.75,
+                plotcolor: "#34ad34"
+            },
+            {
+                percentile: 0.9,
+                plotcolor: "#9934ad"
+            }
+        ]
+    )
 
     const [showAnalytes, setShowAnalytes] = useState(true);
-        
-    const [plotData, setPlotData] = useLocalStorage('bmpIndexComparisonPlotData', []);
+    const [analytes, setAnalytes] = useState([]);
+    const [activeAnalytes, setActiveAnalytes] = useState([]);
+
+    const [plotData, setPlotData] = useLocalStorage('bmpThreshComparisonPlotData', []);
 
 
 
@@ -38,7 +67,7 @@ function ThreshCompUI({siteName, bmpName, analytes, activeAnalytes, setActiveAna
             if (!confirmed) return;
         }
 
-        fetch('threshcomparison', {
+        fetch('threshcomparison', { // the threshcomparison route is to be created later
             method: 'post',
             headers: {
                 'Content-Type': 'application/json'
@@ -78,34 +107,22 @@ function ThreshCompUI({siteName, bmpName, analytes, activeAnalytes, setActiveAna
 
 
     return (<div className="container my-1">
-        <div class="row mb-4">
-            {/* Assume ColorPicker supports Bootstrap styling; otherwise, adapt it */}
-            <div className="col-md-4">
-                <ColorPicker
-                    label="AHP Score Color"
-                    id="ahp-color-picker"
-                    name="ahp-color-picker"
-                    color={ahpColor}
-                    onChange={(e) => setAhpColor(e.target.value)}
-                />
-            </div>
-
-            <div className="col-md-4">
-                <ColorPicker
-                    label="Ranksum Score Color"
-                    id="ranksum-color-picker"
-                    name="ranksum-color-picker"
-                    color={ranksumColor}
-                    onChange={(e) => setRanksumColor(e.target.value)}
-                />
-            </div>
-
+        <div class="row mb-5">
+            {
+                threshVals.map((v, i) => {
+                    return (
+                        <div key={i} className="col-md-2">
+                            <ThreshSelector index={i} threshVals={threshVals} setThreshVals={setThreshVals} />
+                        </div>
+                    )
+                })
+            }
         </div>
 
 
         <div class="row mb-4 d-flex align-items-end">
-            
-            <div className="col-4 form-check d-flex flex-column">
+
+            <div className="col-3 form-check d-flex flex-column">
                 <div className="mt-auto">
                     <button
                         id="add-data-btn"
@@ -116,7 +133,7 @@ function ThreshCompUI({siteName, bmpName, analytes, activeAnalytes, setActiveAna
                     </button>
                 </div>
             </div>
-            <div className="col-4 form-check d-flex flex-column">
+            <div className="col-3 form-check d-flex flex-column">
                 <div className="mt-auto">
                     <button
                         id="delete-current-data-btn"
@@ -131,7 +148,7 @@ function ThreshCompUI({siteName, bmpName, analytes, activeAnalytes, setActiveAna
                     </button>
                 </div>
             </div>
-            <div className="col-4 form-check d-flex flex-column">
+            <div className="col-3 form-check d-flex flex-column">
                 <div className="mt-auto">
                     <button
                         id="delete-all-data-btn"
@@ -143,6 +160,21 @@ function ThreshCompUI({siteName, bmpName, analytes, activeAnalytes, setActiveAna
                         }}
                     >
                         Clear Plot data for all sites
+                    </button>
+                </div>
+            </div>
+            <div className="col-3 form-check d-flex flex-column">
+                <div className="mt-auto">
+                    <button
+                        id="thresh-reset-btn"
+                        className="btn btn-primary"
+                        onClick={(e) => {
+                            const confirmed = confirm(`Are you sure you want to revert plot colors and thresholds to default?`)
+                            if (!confirmed) return;
+                            window.localStorage.removeItem(THRESHOLD_VALUE_LOCALSTORAGE_KEY);
+                        }}
+                    >
+                        Reset Threshold Values
                     </button>
                 </div>
             </div>
@@ -171,14 +203,13 @@ function ThreshCompUI({siteName, bmpName, analytes, activeAnalytes, setActiveAna
             analytes={analytes}
             siteName={siteName}
             bmpName={bmpName}
-            universalThreshPercentile={universalThreshPercentile}
             setActiveAnalytes={setActiveAnalytes}
         />
 
 
         <div id="index-comparison-chart" className="mt-5">
             <div class="chart-label" style={{ textAlign: 'center', fontSize: '20px' }}>Ranksum vs AHP Comparison plot</div>
-            <IndexComparisonChart plotData={plotData.filter((d) => ((d.sitename == siteName) & (d.bmpname == bmpName)))} ahpColor={ahpColor} ranksumColor={ranksumColor} />
+            {/* <IndexComparisonChart plotData={plotData.filter((d) => ((d.sitename == siteName) & (d.bmpname == bmpName)))} ahpColor={ahpColor} ranksumColor={ranksumColor} /> */}
         </div>
     </div>)
 }

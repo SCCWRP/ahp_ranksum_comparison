@@ -9,6 +9,7 @@ import DropdownSelector from './components/DropdownSelector';
 // Styles
 import './styles/generic.css'
 import '../node_modules/bootstrap/dist/css/bootstrap.min.css';
+import ThreshCompUI from './ThreshCompUI';
 
 
 function App() {
@@ -80,7 +81,8 @@ function App() {
 
 
 
-            <AHPRankSumCompUI siteName={selectedSiteName} bmpName={selectedBmpName} />
+            {/* <AHPRankSumCompUI siteName={selectedSiteName} bmpName={selectedBmpName} /> */}
+            <ThreshCompUI siteName={selectedSiteName} bmpName={selectedBmpName} />
 
 
         </>
