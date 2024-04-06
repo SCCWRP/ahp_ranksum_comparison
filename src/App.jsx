@@ -14,12 +14,13 @@ import ThreshCompUI from './ThreshCompUI';
 
 function App() {
 
+    const [activeUI, setActiveUI] = useState('ahp');
 
     const [siteNames, setSiteNames] = useState([]);
     const [selectedSiteName, setSelectedSiteName] = useState('');
     const [bmpNames, setBmpNames] = useState([]);
     const [selectedBmpName, setSelectedBmpName] = useState('');
-    
+
 
 
     // Fetch Site Names
@@ -49,14 +50,14 @@ function App() {
             });
     }, [selectedSiteName]);
 
-    
+
 
 
     return (
         <>
             <div className="container mt-4 mb-1">
                 <h2 className="mb-5">BMP Mashup Performance Index Comparison Tool</h2>
-                <div className="row mt-4 mb-1">
+                <div className="row mt-4 mb-5">
                     <div className="col-md-6">
                         <DropdownSelector
                             id="sitename-select"
@@ -77,12 +78,51 @@ function App() {
                         />
                     </div>
                 </div>
+                {/* Radio buttons for toggling UI components */}
+                <div className="mb-3">
+                    <div className="form-check form-check-inline">
+                        <input
+                            className="form-check-input"
+                            type="radio"
+                            name="uiOptions"
+                            id="ahpUI"
+                            value="ahp"
+                            checked={activeUI === 'ahp'}
+                            onChange={(e) => setActiveUI(e.target.value)}
+                        />
+                        <label className="form-check-label" htmlFor="ahpUI">
+                            AHP Rank Sum Comparison
+                        </label>
+                    </div>
+                    <div className="form-check form-check-inline">
+                        <input
+                            className="form-check-input"
+                            type="radio"
+                            name="uiOptions"
+                            id="threshUI"
+                            value="thresh"
+                            checked={activeUI === 'thresh'}
+                            onChange={(e) => setActiveUI(e.target.value)}
+                        />
+                        <label className="form-check-label" htmlFor="threshUI">
+                            Threshold Comparison
+                        </label>
+                    </div>
+                </div>
             </div>
 
 
 
-            {/* <AHPRankSumCompUI siteName={selectedSiteName} bmpName={selectedBmpName} /> */}
-            <ThreshCompUI siteName={selectedSiteName} bmpName={selectedBmpName} />
+
+            {/* Ternary operation to conditionally render UI based on activeUI state */}
+            {
+                activeUI === 'ahp' ? (
+                    <AHPRankSumCompUI siteName={selectedSiteName} bmpName={selectedBmpName} />
+                ) : (
+                    <ThreshCompUI siteName={selectedSiteName} bmpName={selectedBmpName} />
+                )
+            }
+
 
 
         </>
