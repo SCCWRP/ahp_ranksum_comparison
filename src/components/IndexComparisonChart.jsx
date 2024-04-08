@@ -1,4 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
+import DataDetailsModalWindow from './DataDetailsModal'
+
 import * as d3 from 'd3';
 
 import debounce from '../utils/debounce';
@@ -21,6 +23,14 @@ const IndexComparisonChart = ({
 ) => { // Adjusted leftMargin for Y axis label space
     const [plotWidth, setPlotWidth] = useState(window.innerWidth * 0.85)
     const [plotHeight, setPlotHeight] = useState(plotWidth * (9 / 16))
+
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedModalData, setSelectedModalData] = useState(null);
+
+
+    console.log("plotData (Index Comparison)")
+    console.log(plotData)
+
 
     useEffect(() => {
         const handleResize = debounce(() => {
@@ -105,7 +115,7 @@ const IndexComparisonChart = ({
                 .call(d3.axisLeft(y))
                 .selectAll(".tick text")  // Selects all text elements within .tick groups
                 .style("font-size", yAxisTickFontSize);  // Sets the font size to 16px
-            
+
 
             // Y axis label
             svg.append("text")
@@ -133,7 +143,7 @@ const IndexComparisonChart = ({
 
             // Tooltip show function
             const showTooltip = (event, d) => {
-                const scoreType = String(event.target.className.baseVal).replace('dot-','')
+                const scoreType = String(event.target.className.baseVal).replace('dot-', '')
                 tooltip.style("opacity", 1)
                     .html(`${scoreType === 'ahp' ? 'AHP' : 'Ranksum'} Score: ${d[`${scoreType}_mashup_score`]}`)
                     .style("left", (event.pageX + 10) + "px")
@@ -158,7 +168,11 @@ const IndexComparisonChart = ({
                 .style("fill", ahpColor)
                 .style("cursor", "pointer") // Change cursor on hover
                 .on("mouseover", showTooltip)
-                .on("mouseout", hideTooltip);
+                .on("mouseout", hideTooltip)
+                .on("click", (event, d) => {
+                    setSelectedAnalyteData(d); // Assuming 'd' contains the 'analytes' array and other info
+                    setIsModalOpen(true);
+                });
 
             svg.selectAll(".dot-ranksum")
                 .data(plotData)
@@ -170,7 +184,11 @@ const IndexComparisonChart = ({
                 .style("fill", ranksumColor)
                 .style("cursor", "pointer") // Change cursor on hover
                 .on("mouseover", showTooltip)
-                .on("mouseout", hideTooltip);
+                .on("mouseout", hideTooltip)
+                .on("click", (event, d) => {
+                    setSelectedModalData(d.analytes); // Assuming 'd' contains the 'analytes' array and other info
+                    setIsModalOpen(true);
+                });
 
         }
     }, [plotData, ahpColor, ranksumColor, plotWidth, plotHeight]);
@@ -179,6 +197,13 @@ const IndexComparisonChart = ({
         <>
             <svg ref={d3Container} />
             <div ref={tooltipRef} className="tooltip" style={{ pointerEvents: 'none' }}></div>
+            <DataDetailsModalWindow
+                isOpen={isModalOpen}
+                onRequestClose={() => setIsModalOpen(false)}
+                data={selectedModalData}
+                labelText="Details"
+            />
+
         </>
     );
 };

@@ -1,4 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
+import Modal from 'react-modal';
+import DataDetailsModalWindow from './DataDetailsModal'
+
 import * as d3 from 'd3';
 
 import debounce from '../utils/debounce';
@@ -26,6 +29,9 @@ const ThreshComparisonChart = ({
     const [plotWidth, setPlotWidth] = useState(window.innerWidth * 0.4)
     const [plotHeight, setPlotHeight] = useState(plotWidth * plotXYRatio)
 
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedModalData, setSelectedModalData] = useState(null);
+
     useEffect(() => {
         const handleResize = debounce(() => {
             // Make the Plot the same width as the parent container
@@ -43,6 +49,9 @@ const ThreshComparisonChart = ({
 
     const d3Container = useRef(null);
     const tooltipRef = useRef(null);
+
+    console.log("plotData (Thresh Comparison)")
+    console.log(plotData)
 
     useEffect(() => {
         if (plotData && d3Container.current) {
@@ -157,7 +166,11 @@ const ThreshComparisonChart = ({
                 .style("fill", d => d[colorProperty])
                 .style("cursor", "pointer") // Change cursor on hover
                 .on("mouseover", showTooltip)
-                .on("mouseout", hideTooltip);
+                .on("mouseout", hideTooltip)
+                .on("click", (event, d) => {
+                    setSelectedModalData(d.threshold_values); // Assuming 'd' contains the 'analytes' array and other info
+                    setIsModalOpen(true);
+                });
         }
     }, [plotData, scoreProperty, colorProperty, plotWidth, plotHeight]);
 
@@ -165,6 +178,12 @@ const ThreshComparisonChart = ({
         <>
             <svg ref={d3Container} />
             <div ref={tooltipRef} className="tooltip" style={{ pointerEvents: 'none' }}></div>
+            <DataDetailsModalWindow
+                isOpen={isModalOpen}
+                onRequestClose={() => setIsModalOpen(false)}
+                data={selectedModalData}
+                labelText="Details"
+            />
         </>
 
     );

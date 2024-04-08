@@ -27,7 +27,8 @@
     "bootstrap": "^5.3.3",
     "d3": "^7.9.0",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "react-modal": "^3.16.1"
   },
   "devDependencies": {
     "esbuild": "^0.20.2"
