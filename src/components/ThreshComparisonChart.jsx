@@ -3,11 +3,11 @@ import * as d3 from 'd3';
 
 import debounce from '../utils/debounce';
 
-const IndexComparisonChart = ({
+const ThreshComparisonChart = ({
     title,
     plotData,
-    ahpColor,
-    ranksumColor,
+    scoreProperty,
+    colorProperty,
     debounceResizeTime = 250,
     topMargin = 35,
     bottomMargin = 30,
@@ -16,11 +16,15 @@ const IndexComparisonChart = ({
     xAxisTickFontSize = "14px",
     yAxisTickFontSize = "14px",
     xAxisLabelFontSize = "20px",
-    yAxisLabelFontSize = "20px"
+    yAxisLabelFontSize = "20px",
+    xAxisLabelText = 'Number of Parameters',
+    yAxisLabelText = 'Score',
+    plotXYRatio = (9 / 16)
 }
 ) => { // Adjusted leftMargin for Y axis label space
-    const [plotWidth, setPlotWidth] = useState(window.innerWidth * 0.85)
-    const [plotHeight, setPlotHeight] = useState(plotWidth * (9 / 16))
+
+    const [plotWidth, setPlotWidth] = useState(window.innerWidth * 0.4)
+    const [plotHeight, setPlotHeight] = useState(plotWidth * plotXYRatio)
 
     useEffect(() => {
         const handleResize = debounce(() => {
@@ -34,7 +38,7 @@ const IndexComparisonChart = ({
     }, []);
 
     useEffect(() => {
-        setPlotHeight(plotWidth * (9 / 16))
+        setPlotHeight(plotWidth * plotXYRatio)
     }, [plotWidth])
 
     const d3Container = useRef(null);
@@ -43,9 +47,6 @@ const IndexComparisonChart = ({
     useEffect(() => {
         if (plotData && d3Container.current) {
             d3.select(d3Container.current).selectAll("*").remove();
-
-            // Make the Plot the same width as the parent container
-            setPlotWidth(d3.select(d3.select(d3Container.current).node().parentNode).node().getBoundingClientRect().width)
 
             // Make the Plot the same width as the parent container
             setPlotWidth(d3.select(d3.select(d3Container.current).node().parentNode).node().getBoundingClientRect().width)
@@ -66,7 +67,6 @@ const IndexComparisonChart = ({
                 .attr("y", -margin.top / 2)
                 .attr("text-anchor", "middle")
                 .style("font-size", "20px")
-                .style("text-decoration", "underline")
                 .text(title);
 
             const x = d3.scaleLinear()
@@ -93,19 +93,18 @@ const IndexComparisonChart = ({
                 .attr("y", height + (margin.top / 2) + (margin.bottom / 2) + 1)
                 .style("text-anchor", "middle")
                 .style("font-size", xAxisLabelFontSize)
-                .text("Number of Parameters");
+                .text(xAxisLabelText);
 
             const y = d3.scaleLinear()
                 .domain([
                     0,
-                    d3.max(plotData, d => Math.max(d.ahp_mashup_score, d.ranksum_mashup_score))
+                    d3.max(plotData, d => d[scoreProperty])
                 ])
                 .range([height, 0]);
             svg.append("g")
                 .call(d3.axisLeft(y))
                 .selectAll(".tick text")  // Selects all text elements within .tick groups
                 .style("font-size", yAxisTickFontSize);  // Sets the font size to 16px
-            
 
             // Y axis label
             svg.append("text")
@@ -115,7 +114,7 @@ const IndexComparisonChart = ({
                 .attr("dy", "1em")
                 .style("text-anchor", "middle")
                 .style("font-size", yAxisLabelFontSize)
-                .text("Mashup Index Score Value");
+                .text(yAxisLabelText);
 
 
 
@@ -133,9 +132,8 @@ const IndexComparisonChart = ({
 
             // Tooltip show function
             const showTooltip = (event, d) => {
-                const scoreType = String(event.target.className.baseVal).replace('dot-','')
                 tooltip.style("opacity", 1)
-                    .html(`${scoreType === 'ahp' ? 'AHP' : 'Ranksum'} Score: ${d[`${scoreType}_mashup_score`]}`)
+                    .html(`Score: ${d[scoreProperty]}<br>Threshold Percentile: ${d.thresh_percentile}`)
                     .style("left", (event.pageX + 10) + "px")
                     .style("top", (event.pageY + 10) + "px")
                     .style("display", "block");
@@ -148,39 +146,28 @@ const IndexComparisonChart = ({
             };
 
 
-            svg.selectAll(".dot-ahp")
+            // Modifying the .dot section to handle mouse events
+            svg.selectAll(".dot")
                 .data(plotData)
                 .enter().append("circle")
-                .attr("class", "dot-ahp")
+                .attr("class", "dot")
                 .attr("cx", d => x(d.n_params))
-                .attr("cy", d => y(d.ahp_mashup_score))
+                .attr("cy", d => y(d[scoreProperty]))
                 .attr("r", 5)
-                .style("fill", ahpColor)
+                .style("fill", d => d[colorProperty])
                 .style("cursor", "pointer") // Change cursor on hover
                 .on("mouseover", showTooltip)
                 .on("mouseout", hideTooltip);
-
-            svg.selectAll(".dot-ranksum")
-                .data(plotData)
-                .enter().append("circle")
-                .attr("class", "dot-ranksum")
-                .attr("cx", d => x(d.n_params))
-                .attr("cy", d => y(d.ranksum_mashup_score))
-                .attr("r", 5)
-                .style("fill", ranksumColor)
-                .style("cursor", "pointer") // Change cursor on hover
-                .on("mouseover", showTooltip)
-                .on("mouseout", hideTooltip);
-
         }
-    }, [plotData, ahpColor, ranksumColor, plotWidth, plotHeight]);
+    }, [plotData, scoreProperty, colorProperty, plotWidth, plotHeight]);
 
     return (
         <>
             <svg ref={d3Container} />
             <div ref={tooltipRef} className="tooltip" style={{ pointerEvents: 'none' }}></div>
         </>
+
     );
 };
 
-export default IndexComparisonChart;
+export default ThreshComparisonChart;

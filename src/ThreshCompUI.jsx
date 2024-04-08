@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import IndexComparisonChart from './components/IndexComparisonChart'
 import { SimpleAnalyteTable } from './components/AnalyteTable';
 import ThreshSelector from './components/ThreshSelector';
+import ThreshComparisonChart from './components/ThreshComparisonChart';
 
 // Custom Hooks
 import useLocalStorage from './hooks/useLocalStorage';
@@ -20,7 +21,7 @@ function ThreshCompUI({ siteName, bmpName, displaySetting = 'block' }) {
     // State management
 
     // const [threshVals, setThreshVals] = useState(
-    const [threshVals, setThreshVals] = useLocalStorage(THRESHOLD_VALUE_LOCALSTORAGE_KEY, 
+    const [threshVals, setThreshVals] = useLocalStorage(THRESHOLD_VALUE_LOCALSTORAGE_KEY,
         [
             {
                 percentile: 0.1,
@@ -56,6 +57,7 @@ function ThreshCompUI({ siteName, bmpName, displaySetting = 'block' }) {
         console.log("activeAnalytes")
         console.log(activeAnalytes)
     }, [activeAnalytes])
+
     // testing
     useEffect(() => {
         console.log("threshVals")
@@ -83,7 +85,7 @@ function ThreshCompUI({ siteName, bmpName, displaySetting = 'block' }) {
             return;
         }
 
-        if (new Set(threshVals.map(v => v.percentile)).size !== threshVals.length){
+        if (new Set(threshVals.map(v => v.percentile)).size !== threshVals.length) {
             const conf = confirm("There are duplicated threshold values in your selections which may cause unexpected behavior. Do you wish to proceed?");
             if (!conf) return;
         }
@@ -120,7 +122,7 @@ function ThreshCompUI({ siteName, bmpName, displaySetting = 'block' }) {
             .then(data => {
                 console.log("data")
                 console.log(data)
-                setPlotData(d => [...d, data])
+                setPlotData(d => [...d, ...data])
             })
             .catch(error => {
                 // Check if it's an expected error structure
@@ -138,7 +140,7 @@ function ThreshCompUI({ siteName, bmpName, displaySetting = 'block' }) {
     }
 
 
-    return (<div className="container my-1" style={{display: displaySetting}}>
+    return (<div className="container my-1" style={{ display: displaySetting }}>
         <div class="row mb-5">
             {
                 threshVals.map((v, i) => {
@@ -238,10 +240,30 @@ function ThreshCompUI({ siteName, bmpName, displaySetting = 'block' }) {
         />
 
 
-        <div id="index-comparison-chart" className="mt-5">
-            <div class="chart-label" style={{ textAlign: 'center', fontSize: '20px' }}>Threshold Comparison Plot (simulating mashup scores for high/low performing BMPs)</div>
-            {/* <IndexComparisonChart plotData={plotData.filter((d) => ((d.sitename == siteName) & (d.bmpname == bmpName)))} ahpColor={ahpColor} ranksumColor={ranksumColor} /> */}
+        <div id="thresh-comparison-chart" className="mt-5">
+            <div class="chart-area-label mb-5" style={{ textAlign: 'center', fontSize: '20px' }}>Threshold Comparison Plots (simulating mashup scores for high/low performing BMPs)</div>
+            <div className="row">
+                <div className="col-6">
+                    <ThreshComparisonChart 
+                        plotData={plotData.filter((d) => ((d.sitename == siteName) & (d.bmpname == bmpName)))} 
+                        scoreProperty="ahp_mashup_score" 
+                        colorProperty="threshold_color" 
+                        xAxisLabelText = 'AHP Score'
+                        title = 'AHP'
+                        />
+                </div>
+                <div className="col-6">
+                    <ThreshComparisonChart 
+                        plotData={plotData.filter((d) => ((d.sitename == siteName) & (d.bmpname == bmpName)))} 
+                        scoreProperty="ranksum_mashup_score" 
+                        colorProperty="threshold_color" 
+                        xAxisLabelText = 'Ranksum Score'
+                        title = 'Ranksum'
+                    />
+                </div>
+            </div>
         </div>
+
     </div>)
 }
 

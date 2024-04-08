@@ -612,8 +612,8 @@ def getdata():
         "thresholds"           : threshold_values,
         "rankings"             : rankings_dict,
         "n_params"             : len(analytes),
-        "ahp_mashup_score"     : ahpmash,
-        "ranksum_mashup_score" : rankmash
+        "ahp_mashup_score"     : round(ahpmash, 2),
+        "ranksum_mashup_score" : round(rankmash, 2)
     }
     
     # return repsonse
@@ -834,13 +834,13 @@ def threshdata():
             "analytenames"         : list(threshold_values.keys()),
             "rankings"             : rankings_dict,
             "n_params"             : len(thresh_percentiles_df),
-            "ahp_mashup_score"     : ahpmash,
-            "ranksum_mashup_score" : rankmash,
+            "ahp_mashup_score"     : round(ahpmash, 2),
+            "ranksum_mashup_score" : round(rankmash, 2),
             "warning_message"      : warning_message
         })
     
     # return repsonse
-    return jsonify(all_scores=all_scores)
+    return jsonify(all_scores), 200
     
 
 
