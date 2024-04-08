@@ -1,3 +1,4 @@
+import traceback
 import pandas as pd
 from flask import Blueprint, request, render_template, jsonify, g
 
@@ -650,8 +651,8 @@ def threshdata():
     # ]
     
     
-    thresh_values_and_colors = params.get('thresholds')
-    # thresh_values_and_colors will look like
+    thresh_percentiles_and_colors = params.get('thresholds')
+    # thresh_percentiles_and_colors will look like
     # [
     #     {
     #         percentile: 0.1,
@@ -738,7 +739,7 @@ def threshdata():
             }
             return jsonify(resp), 400
         
-    if not all([ str(t.get('percentile')).replace('.','').isdigit() for t in thresh_values_and_colors ]):
+    if not all([ str(t.get('percentile')).replace('.','').isdigit() for t in thresh_percentiles_and_colors ]):
             resp = {
                 "error": "Invalid thresh percentiles value",
                 "message": "Threshold percentile value must be numeric"
@@ -750,7 +751,7 @@ def threshdata():
     percentile_cont_str = ',\n'.join(
         [
             f"PERCENTILE_CONT({t.get('percentile')}) WITHIN GROUP ( ORDER BY inflow_emc ) AS thresh_{round(t.get('percentile') * 100)}" 
-            for t in thresh_values_and_colors
+            for t in thresh_percentiles_and_colors
         ]
     )
     
@@ -809,9 +810,21 @@ def threshdata():
         ahpmash = mashup_index(wqindexdf.performance_index.values, wqindexdf.ahp_weights.values)
         rankmash = mashup_index(wqindexdf.performance_index.values, wqindexdf.ranksum_weights.values)
         
+        thresh_percentile = (float(col.replace('thresh_','')) / 100)
+        
+        try:
+            thresh_color = str([ v.get('plotcolor', "#000000") for v in thresh_percentiles_and_colors if v.get('percentile') == thresh_percentile][0]).upper()
+            warning_message = ""
+        except IndexError as e:
+            print("ERROR getting thresh color - not found")
+            traceback.print_exc()
+            warning_message = f"Plot color not found for percentile {thresh_percentile}"
+            thresh_color = "#000000"
+        
         
         all_scores.append({
-            "thresh_percentile"    : (float(col.replace('thresh_','')) / 100),
+            "thresh_percentile"    : thresh_percentile,
+            "threshold_color"      : thresh_color,
             "threshold_values"     : threshold_values,
             "sitename"             : sitename,
             "bmpname"              : firstbmp,
@@ -822,7 +835,8 @@ def threshdata():
             "rankings"             : rankings_dict,
             "n_params"             : len(thresh_percentiles_df),
             "ahp_mashup_score"     : ahpmash,
-            "ranksum_mashup_score" : rankmash
+            "ranksum_mashup_score" : rankmash,
+            "warning_message"      : warning_message
         })
     
     # return repsonse

@@ -10,6 +10,7 @@
     "restart": "sudo docker container restart bmp-index-comparisons",
     "logs": "sudo docker container logs -f bmp-index-comparisons",
     "clearlogs": "sudo truncate -s 0 $(docker inspect --format=\"{{.LogPath}}\" bmp-index-comparisons)",
+    "ipython": "sudo docker container exec -it bmp-index-comparisons ipython",
     "dev": "esbuild ./src/index.jsx --bundle --outdir=./api/static --sourcemap --target=es2015 --watch"
   },
   "repository": {
