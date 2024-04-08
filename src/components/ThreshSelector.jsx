@@ -29,6 +29,7 @@ function ThreshSelector({ index, threshVals, setThreshVals }) {
     }, [colorVar])
 
     useEffect(() => {
+        
         setThreshVals(
             prev => prev.map(
                 (v, i) => {

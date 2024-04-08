@@ -7,6 +7,9 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "esbuild ./src/index.jsx --bundle --outdir=./api/static --minify --sourcemap --target=es2015",
     "serve": "sudo ./docker/deployserver.sh",
+    "restart": "sudo docker container restart bmp-index-comparisons",
+    "logs": "sudo docker container logs -f bmp-index-comparisons",
+    "clearlogs": "sudo truncate -s 0 $(docker inspect --format=\"{{.LogPath}}\" bmp-index-comparisons)",
     "dev": "esbuild ./src/index.jsx --bundle --outdir=./api/static --sourcemap --target=es2015 --watch"
   },
   "repository": {

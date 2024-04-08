@@ -115,13 +115,12 @@ function App() {
 
 
             {/* Ternary operation to conditionally render UI based on activeUI state */}
-            {
-                activeUI === 'ahp' ? (
-                    <AHPRankSumCompUI siteName={selectedSiteName} bmpName={selectedBmpName} />
-                ) : (
-                    <ThreshCompUI siteName={selectedSiteName} bmpName={selectedBmpName} />
-                )
-            }
+            {/* Doing it this way makes it so both components render, but only one is displayed. This prevents them from re rendering when they toggle between the two */}
+
+            <AHPRankSumCompUI siteName={selectedSiteName} bmpName={selectedBmpName} displaySetting={activeUI === 'ahp' ? 'block' : 'none'}/>
+
+            <ThreshCompUI siteName={selectedSiteName} bmpName={selectedBmpName} displaySetting={activeUI === 'ahp' ? 'none' : 'block'}/>
+
 
 
 

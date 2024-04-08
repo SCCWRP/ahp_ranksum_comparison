@@ -13,7 +13,7 @@ import useLocalStorage from './hooks/useLocalStorage';
 import './styles/generic.css'
 import '../node_modules/bootstrap/dist/css/bootstrap.min.css';
 
-function ThreshCompUI({ siteName, bmpName }) {
+function ThreshCompUI({ siteName, bmpName, displaySetting = 'block' }) {
 
     const THRESHOLD_VALUE_LOCALSTORAGE_KEY = "threshCompPercentilesAndPlotColors";
 
@@ -56,6 +56,11 @@ function ThreshCompUI({ siteName, bmpName }) {
         console.log("activeAnalytes")
         console.log(activeAnalytes)
     }, [activeAnalytes])
+    // testing
+    useEffect(() => {
+        console.log("threshVals")
+        console.log(threshVals)
+    }, [threshVals])
 
     // Fetch Analytes when a BMP name is selected
     useEffect(() => {
@@ -76,6 +81,11 @@ function ThreshCompUI({ siteName, bmpName }) {
         if (activeAnalytes.length < 2) {
             alert("Mashup score cannot be calculated with less than 2 parameters")
             return;
+        }
+
+        if (new Set(threshVals.map(v => v.percentile)).size !== threshVals.length){
+            const conf = confirm("There are duplicated threshold values in your selections which may cause unexpected behavior. Do you wish to proceed?");
+            if (!conf) return;
         }
 
         const consecutiveRankings = ((activeAnalytes.map((a) => a.rank).reduce((prev, cur) => prev + cur, 0)) === (activeAnalytes.length * (activeAnalytes.length + 1) * 0.5));
@@ -128,7 +138,7 @@ function ThreshCompUI({ siteName, bmpName }) {
     }
 
 
-    return (<div className="container my-1">
+    return (<div className="container my-1" style={{display: displaySetting}}>
         <div class="row mb-5">
             {
                 threshVals.map((v, i) => {
@@ -140,7 +150,6 @@ function ThreshCompUI({ siteName, bmpName }) {
                 })
             }
         </div>
-
 
         <div class="row mb-4 d-flex align-items-end">
 

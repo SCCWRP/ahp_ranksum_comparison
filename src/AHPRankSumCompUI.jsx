@@ -12,7 +12,7 @@ import useLocalStorage from './hooks/useLocalStorage';
 import './styles/generic.css'
 import '../node_modules/bootstrap/dist/css/bootstrap.min.css';
 
-function AHPRankSumCompUI({siteName, bmpName}) {
+function AHPRankSumCompUI({siteName, bmpName, displaySetting = 'block' }) {
 
     // State management
     const [ahpColor, setAhpColor] = useState('#00FF00');
@@ -92,7 +92,7 @@ function AHPRankSumCompUI({siteName, bmpName}) {
     }
 
 
-    return (<div className="container my-1">
+    return (<div className="container my-1" style={{display: displaySetting}}>
         <div class="row mb-5">
             {/* Assume ColorPicker supports Bootstrap styling; otherwise, adapt it */}
             <div className="col-md-4">
