@@ -164,7 +164,7 @@ const IndexComparisonChart = ({
                 setSelectedModalData(
                     {
                         summaryData: summaryData,
-                        detailedData: d.analytes
+                        detailedData: d.analytes.sort((a, b) => a.rank - b.rank)
                     }
                 );
                 setIsModalOpen(true);

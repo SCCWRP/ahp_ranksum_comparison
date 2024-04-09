@@ -176,7 +176,7 @@ const ThreshComparisonChart = ({
                     setSelectedModalData(
                         {
                             summaryData: summaryData,
-                            detailedData: analyteDetails
+                            detailedData: analyteDetails.sort((a,b) => a.rank - b.rank)
                         }
                     );
 
