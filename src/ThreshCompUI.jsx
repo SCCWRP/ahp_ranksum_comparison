@@ -49,7 +49,6 @@ function ThreshCompUI({ siteName, bmpName, displaySetting = 'block', loaderGifRo
 
     const [showAnalytes, setShowAnalytes] = useState(true);
     const [analytes, setAnalytes] = useState([]);
-    const [activeAnalytes, setActiveAnalytes] = useState([]);
 
     const [plotData, setPlotData] = useLocalStorage('bmpThreshComparisonPlotData', []);
 
@@ -69,13 +68,15 @@ function ThreshCompUI({ siteName, bmpName, displaySetting = 'block', loaderGifRo
         fetch(`analytes?sitename=${encodeURIComponent(siteName)}&bmpname=${encodeURIComponent(bmpName)}`) // Your API endpoint for fetching analytes
             .then((response) => response.json())
             .then((data) => {
-                setAnalytes((a) => data.analytes);
-                setActiveAnalytes([]); // reset
+                // start off all analytes as active
+                setAnalytes((a) => data.analytes.map(d => { return {...d, isActive: true } } ));
             });
     }, [siteName, bmpName]);
 
 
     function updatePlotData() {
+
+        const activeAnalytes = analytes.filter(a => a.isActive);
 
         if (activeAnalytes.length < 2) {
             alert("Mashup score cannot be calculated with less than 2 parameters")
@@ -230,10 +231,10 @@ function ThreshCompUI({ siteName, bmpName, displaySetting = 'block', loaderGifRo
 
         <SimpleAnalyteTable
             showAnalytes={showAnalytes}
-            analytes={analytes}
             siteName={siteName}
             bmpName={bmpName}
-            setActiveAnalytes={setActiveAnalytes}
+            analytes={analytes}
+            setAnalytes={setAnalytes}
         />
 
 

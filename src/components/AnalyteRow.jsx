@@ -167,40 +167,13 @@ export default AnalyteRow;
 
 
 
-export function SimpleAnalyteRow({ siteName, bmpName, analytename, initialThreshPercentile = 0.25, unit, initialRank, universalThreshPercentile = 0.25, setActiveAnalytes }) {
-    const [isEnabled, setIsEnabled] = useState(true);
-    const [rank, setRank] = useState(initialRank);
+export function SimpleAnalyteRow({analytename, unit, rank, isEnabled, setAnalytes }) {
 
     // Inside AnalyteRow component
 
     function handleCheckboxChange() {
-        setIsEnabled(prev => !prev); // Toggle the enabled/disabled state locally
-
-        // Then update the activeAnalytes list in the parent component
-        if (isEnabled) {
-            // If it was enabled before, now remove it from the active list
-            setActiveAnalytes(prev => prev.filter(a => a.analytename !== analytename));
-        } else {
-            // If it was disabled before, now add it back to the active list
-            // You might want to include more data here depending on your needs
-            setActiveAnalytes(prev => [...prev, { analytename: analytename, unit: unit, rank: rank }]);
-        }
+        setAnalytes(prev => prev.map(a => { return a.analytename == analytename ? {...a, isActive: !a.isActive } : a } ));
     }
-
-    // add to active analytes when the component mounts
-    useEffect(() => {
-        setActiveAnalytes(prev => [...prev, { analytename: analytename, unit: unit, rank: rank }]);
-    }, [])
-
-
-    useEffect(() => {
-        // Update the matching analyte in the activeAnalytes array
-        setActiveAnalytes(prev => prev.map(analyte =>
-            analyte.analytename === analytename
-                ? { ...analyte, rank: rank }
-                : analyte
-        ));
-    }, [rank])
 
     return (
         <tr style={{ opacity: isEnabled ? 1 : 0.5 }}>
@@ -211,7 +184,11 @@ export function SimpleAnalyteRow({ siteName, bmpName, analytename, initialThresh
             <td>{unit}</td>
             <td>
                 <input type="number" className="form-control" value={rank}
-                    onChange={(e) => { setRank(Number(e.target.value)); }
+                    onChange={
+                        (e) => { 
+                            // setRank(Number(e.target.value));
+                            setAnalytes( prev => prev.map(a => a.analytename == analytename ? {...a, rank: Number(e.target.value)} : a ) );
+                        }
                     } />
             </td>
         </tr>

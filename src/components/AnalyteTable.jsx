@@ -38,7 +38,7 @@ const AnalyteTable = ({ showAnalytes, analytes, siteName, bmpName, universalThre
 export default AnalyteTable;
 
 
-export const SimpleAnalyteTable = ({ showAnalytes, analytes, siteName, bmpName, setActiveAnalytes }) => {
+export const SimpleAnalyteTable = ({ showAnalytes, siteName, bmpName, analytes, setAnalytes }) => {
     return (
       <div className="table-responsive" style={{ display: showAnalytes ? 'block' : 'none' }}>
         <table className="table">
@@ -54,12 +54,11 @@ export const SimpleAnalyteTable = ({ showAnalytes, analytes, siteName, bmpName, 
             {analytes.map((analyte, index) => (
               <SimpleAnalyteRow
                 key={index}
-                siteName={siteName}
-                bmpName={bmpName}
                 analytename={analyte.analytename}
                 unit={analyte.unit}
-                initialRank={index + 1}
-                setActiveAnalytes={setActiveAnalytes} // so the checkbox can affect the active analytes
+                rank={analyte.isActive ? index + 1 : -1}
+                isEnabled={analyte.isActive}
+                setAnalytes={setAnalytes} // so the checkbox can affect the active analytes
               />
             ))}
           </tbody>
