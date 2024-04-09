@@ -54,7 +54,7 @@ export const SimpleAnalyteTable = ({ showAnalytes, siteName, bmpName, analytes, 
                     </tr>
                 </thead>
                 <tbody>
-                    {analytes.map((analyte, index) => (
+                    {analytes && analytes.map((analyte, index) => (
                         <SimpleAnalyteRow
                             key={index}
                             analytename={analyte.analytename}

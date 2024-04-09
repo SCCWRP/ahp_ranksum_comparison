@@ -160,12 +160,44 @@ function AnalyteRow({ siteName, bmpName, analytename , unit, rank, isEnabled, se
             <td>{unit}</td>
             <td>
                 <input type="number" className="form-control" value={rank}
-                    onChange={
-                        (e) => { 
-                            // setRank(Number(e.target.value));
-                            setAnalytes( prev => prev.map(a => a.analytename == analytename ? {...a, rank: Number(e.target.value)} : a ) );
-                        }
-                    } />
+                    onChange={(e) => {
+                        const newRank = Number(e.target.value);
+                        setAnalytes(prev => {
+                            const updatedAnalytes = [...prev]; // Clone the array to avoid direct mutation
+                            const currentAnalyteIndex = updatedAnalytes.findIndex(a => a.analytename === analytename);
+                            const currentAnalyte = updatedAnalytes[currentAnalyteIndex];
+                            const oldRank = currentAnalyte.rank;
+                    
+                            if (newRank === oldRank) {
+                                // No rank change, just return the original array
+                                return prev;
+                            }
+                    
+                            // Adjust ranks
+                            updatedAnalytes.forEach(analyte => {
+                                if (analyte.isActive) {
+                                    if (newRank > oldRank) {
+                                        // Moving down in the list (increasing rank number)
+                                        if (analyte.rank > oldRank && analyte.rank <= newRank) {
+                                            analyte.rank--;
+                                        }
+                                    } else {
+                                        // Moving up in the list (decreasing rank number)
+                                        if (analyte.rank < oldRank && analyte.rank >= newRank) {
+                                            analyte.rank++;
+                                        }
+                                    }
+                                }
+                            });
+                    
+                            // Finally, update the rank of the current analyte
+                            currentAnalyte.rank = newRank;
+                    
+                            // Re-sort based on the original positions to maintain visual order
+                            return updatedAnalytes.sort((a, b) => prev.findIndex(item => item.analytename === a.analytename) - prev.findIndex(item => item.analytename === b.analytename));
+                        });
+                    }} 
+                />
             </td>
         </tr>
     );
@@ -214,12 +246,45 @@ export function SimpleAnalyteRow({analytename, unit, rank, isEnabled, setAnalyte
             <td>{unit}</td>
             <td>
                 <input type="number" className="form-control" value={rank}
-                    onChange={
-                        (e) => { 
-                            // setRank(Number(e.target.value));
-                            setAnalytes( prev => prev.map(a => a.analytename == analytename ? {...a, rank: Number(e.target.value)} : a ) );
-                        }
-                    } />
+                    onChange={(e) => {
+                        const newRank = Number(e.target.value);
+                        setAnalytes(prev => {
+                            const updatedAnalytes = [...prev]; // Clone the array to avoid direct mutation
+                            const currentAnalyteIndex = updatedAnalytes.findIndex(a => a.analytename === analytename);
+                            const currentAnalyte = updatedAnalytes[currentAnalyteIndex];
+                            const oldRank = currentAnalyte.rank;
+                    
+                            if (newRank === oldRank) {
+                                // No rank change, just return the original array
+                                return prev;
+                            }
+                    
+                            // Adjust ranks
+                            updatedAnalytes.forEach(analyte => {
+                                if (analyte.isActive) {
+                                    if (newRank > oldRank) {
+                                        // Moving down in the list (increasing rank number)
+                                        if (analyte.rank > oldRank && analyte.rank <= newRank) {
+                                            analyte.rank--;
+                                        }
+                                    } else {
+                                        // Moving up in the list (decreasing rank number)
+                                        if (analyte.rank < oldRank && analyte.rank >= newRank) {
+                                            analyte.rank++;
+                                        }
+                                    }
+                                }
+                            });
+                    
+                            // Finally, update the rank of the current analyte
+                            currentAnalyte.rank = newRank;
+                    
+                            // Re-sort based on the original positions to maintain visual order
+                            return updatedAnalytes.sort((a, b) => prev.findIndex(item => item.analytename === a.analytename) - prev.findIndex(item => item.analytename === b.analytename));
+                        });
+                    }}
+                    
+                />
             </td>
         </tr>
     );
