@@ -69,7 +69,7 @@ function ThreshCompUI({ siteName, bmpName, displaySetting = 'block', loaderGifRo
             .then((response) => response.json())
             .then((data) => {
                 // start off all analytes as active
-                setAnalytes((a) => data.analytes.map(d => { return {...d, isActive: true } } ));
+                setAnalytes((a) => data.analytes.map((d , i) => { return {...d, isActive: true, rank: (i + 1) } } ));
             });
     }, [siteName, bmpName]);
 
@@ -77,6 +77,11 @@ function ThreshCompUI({ siteName, bmpName, displaySetting = 'block', loaderGifRo
     function updatePlotData() {
 
         const activeAnalytes = analytes.filter(a => a.isActive);
+
+        console.log("analytes")
+        console.log(analytes)
+        console.log("activeAnalytes")
+        console.log(activeAnalytes)
 
         if (activeAnalytes.length < 2) {
             alert("Mashup score cannot be calculated with less than 2 parameters")

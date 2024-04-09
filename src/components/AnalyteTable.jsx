@@ -1,7 +1,7 @@
 import React from 'react';
 import AnalyteRow, {SimpleAnalyteRow} from './AnalyteRow'; // Assuming AnalyteRow is your component for rendering each row
 
-const AnalyteTable = ({ showAnalytes, analytes, siteName, bmpName, universalThreshPercentile, setActiveAnalytes }) => {
+const AnalyteTable = ({ showAnalytes, analytes, siteName, bmpName, universalThreshPercentile, setAnalytes }) => {
   return (
     <div className="table-responsive" style={{ display: showAnalytes ? 'block' : 'none' }}>
       <table className="table">
@@ -23,9 +23,10 @@ const AnalyteTable = ({ showAnalytes, analytes, siteName, bmpName, universalThre
               bmpName={bmpName}
               analytename={analyte.analytename}
               unit={analyte.unit}
-              initialRank={index + 1}
+              rank={analyte.isActive ? index + 1 : -1}
+              isEnabled={analyte.isActive}
               universalThreshPercentile={universalThreshPercentile}
-              setActiveAnalytes={setActiveAnalytes} // so the checkbox can affect the active analytes
+              setAnalytes={setAnalytes} // so the checkbox can affect the active analytes
             />
           ))}
         </tbody>

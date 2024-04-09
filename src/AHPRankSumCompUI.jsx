@@ -20,7 +20,6 @@ function AHPRankSumCompUI({siteName, bmpName, displaySetting = 'block' }) {
 
     const [showAnalytes, setShowAnalytes] = useState(true);
     const [analytes, setAnalytes] = useState([]);
-    const [activeAnalytes, setActiveAnalytes] = useState([]);
     
     
     const [plotData, setPlotData] = useLocalStorage('bmpIndexComparisonPlotData', []);
@@ -34,13 +33,19 @@ function AHPRankSumCompUI({siteName, bmpName, displaySetting = 'block' }) {
         fetch(`analytes?sitename=${encodeURIComponent(siteName)}&bmpname=${encodeURIComponent(bmpName)}`) // Your API endpoint for fetching analytes
             .then((response) => response.json())
             .then((data) => {
-                setAnalytes((a) => data.analytes);
-                setActiveAnalytes([]); // reset
+                setAnalytes((a) => data.analytes.map(a => {return {...a, isActive: true}}));
             });
     }, [siteName, bmpName]);
 
 
     function updatePlotData() {
+
+        const activeAnalytes = analytes.filter(a => a.isActive);
+
+        console.log("analytes")
+        console.log(analytes)
+        console.log("activeAnalytes")
+        console.log(activeAnalytes)
 
         if (activeAnalytes.length < 2) {
             alert("Mashup score cannot be calculated with less than 2 parameters")
@@ -200,7 +205,7 @@ function AHPRankSumCompUI({siteName, bmpName, displaySetting = 'block' }) {
             siteName={siteName}
             bmpName={bmpName}
             universalThreshPercentile={universalThreshPercentile}
-            setActiveAnalytes={setActiveAnalytes}
+            setAnalytes={setAnalytes}
         />
 
 

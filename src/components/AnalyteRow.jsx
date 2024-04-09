@@ -2,9 +2,7 @@ import React, { useState, useEffect } from "react";
 import '../styles/generic.css'
 import '../../node_modules/bootstrap/dist/css/bootstrap.min.css'
 
-function AnalyteRow({ siteName, bmpName, analytename, initialThreshPercentile = 0.25, unit, initialRank, universalThreshPercentile = 0.25, setActiveAnalytes }) {
-    const [isEnabled, setIsEnabled] = useState(true);
-    const [rank, setRank] = useState(initialRank);
+function AnalyteRow({ siteName, bmpName, analytename , unit, rank, isEnabled, setAnalytes, initialThreshPercentile = 0.25, universalThreshPercentile = 0.25 }) {
     const [threshPercentile, setThreshPercentile] = useState(initialThreshPercentile);
     const [threshVal, setThreshVal] = useState(1);
 
@@ -16,28 +14,13 @@ function AnalyteRow({ siteName, bmpName, analytename, initialThreshPercentile = 
     // Inside AnalyteRow component
 
     function handleCheckboxChange() {
-        setIsEnabled(prev => !prev); // Toggle the enabled/disabled state locally
-
-        // Then update the activeAnalytes list in the parent component
-        if (isEnabled) {
-            // If it was enabled before, now remove it from the active list
-            setActiveAnalytes(prev => prev.filter(a => a.analytename !== analytename));
-        } else {
-            // If it was disabled before, now add it back to the active list
-            // You might want to include more data here depending on your needs
-            setActiveAnalytes(prev => [...prev, { analytename: analytename, unit: unit, threshold_value: threshVal, rank: rank }]);
-        }
+        setAnalytes(prev => prev.map(a => a.analytename == analytename ? {...a, isActive: !a.isActive } : a));
     }
-
-    // add to active analytes when the component mounts
-    useEffect(() => {
-        setActiveAnalytes(prev => [...prev, { analytename: analytename, unit: unit, threshold_value: threshVal, rank: rank }]);
-    }, [])
 
 
     useEffect(() => {
         // Update the matching analyte in the activeAnalytes array
-        setActiveAnalytes(prev => prev.map(analyte =>
+        setAnalytes(prev => prev.map(analyte =>
             analyte.analytename === analytename
                 ? { ...analyte, threshold_value: threshVal, rank: rank }
                 : analyte
@@ -129,8 +112,8 @@ function AnalyteRow({ siteName, bmpName, analytename, initialThreshPercentile = 
         }
 
         // Update the matching analyte in the activeAnalytes array
-        setActiveAnalytes(prev => prev.map(analyte =>
-            analyte.analytename === analytename
+        setAnalytes(prev => prev.map(analyte =>
+            analyte.analytename == analytename
                 ? { ...analyte, threshold_value: threshVal, rank: rank }
                 : analyte
         ));
@@ -156,7 +139,11 @@ function AnalyteRow({ siteName, bmpName, analytename, initialThreshPercentile = 
             <td>{unit}</td>
             <td>
                 <input type="number" className="form-control" value={rank}
-                    onChange={(e) => { setRank(Number(e.target.value)); }
+                    onChange={
+                        (e) => { 
+                            // setRank(Number(e.target.value));
+                            setAnalytes( prev => prev.map(a => a.analytename == analytename ? {...a, rank: Number(e.target.value)} : a ) );
+                        }
                     } />
             </td>
         </tr>

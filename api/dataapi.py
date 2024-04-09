@@ -501,7 +501,7 @@ def getdata():
         }
         return jsonify(resp), 400
     
-    if not all([set(a.keys()).issubset(set(['analytename','threshold_value','unit','rank'])) for a in analytes]):
+    if not all([set(['analytename','threshold_value','unit','rank']).issubset(set(a.keys())) for a in analytes]):
         resp = {
             "error": "Invalid parameter values",
             "message": "all dictionaries in the analytes list must have attributes analytename, threshold_value, unit and rank"
@@ -695,10 +695,10 @@ def threshdata():
         }
         return jsonify(resp), 400
     
-    if not all([set(a.keys()).issubset(set(['analytename','unit','rank'])) for a in analytes]):
+    if not all([set(['analytename','unit','rank']).issubset(set(a.keys())) for a in analytes]):
         resp = {
             "error": "Invalid parameter values",
-            "message": "all dictionaries in the analytes list must have attributes analytename, threshold_value, unit and rank"
+            "message": "all dictionaries in the analytes list must have attributes analytename, unit and rank"
         }
         return jsonify(resp), 400
     
