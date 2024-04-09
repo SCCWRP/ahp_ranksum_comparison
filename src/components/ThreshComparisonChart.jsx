@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Modal from 'react-modal';
-import DataDetailsModalWindow from './DataDetailsModal'
+import DataDetailsModalWindow from './Modals'
 
 import * as d3 from 'd3';
 
@@ -50,8 +50,6 @@ const ThreshComparisonChart = ({
     const d3Container = useRef(null);
     const tooltipRef = useRef(null);
 
-    console.log("plotData (Thresh Comparison)")
-    console.log(plotData)
 
     useEffect(() => {
         if (plotData && d3Container.current) {
@@ -168,8 +166,6 @@ const ThreshComparisonChart = ({
                 .on("mouseover", showTooltip)
                 .on("mouseout", hideTooltip)
                 .on("click", (event, d) => {
-                    console.log("scoreProperty.replace('_mashup_score') ")
-                    console.log(scoreProperty.replace('_mashup_score'))
                     const analyteDetails = d.analytes;
 
                     const summaryData = {

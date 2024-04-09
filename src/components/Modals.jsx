@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import Modal from 'react-modal';
 
 import '../styles/modal.css'
@@ -7,7 +7,7 @@ function DataDetailsModalWindow({ isOpen, onRequestClose, data, labelText }) {
 
     const detailedData = data.detailedData;
     const summaryData = data.summaryData;
-    
+
     // Generate table rows dynamically based on data properties
     const generateTableRows = (detailedData) => {
         return detailedData.map((val, index) => (
@@ -82,5 +82,9 @@ function DataDetailsModalWindow({ isOpen, onRequestClose, data, labelText }) {
         </Modal>
     );
 }
+
+
+
+
 
 export default DataDetailsModalWindow;

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Modal from 'react-modal'
 
 // Component imports
 import IndexComparisonChart from './components/IndexComparisonChart'
@@ -14,7 +15,7 @@ import useLocalStorage from './hooks/useLocalStorage';
 import './styles/generic.css'
 import '../node_modules/bootstrap/dist/css/bootstrap.min.css';
 
-function ThreshCompUI({ siteName, bmpName, displaySetting = 'block' }) {
+function ThreshCompUI({ siteName, bmpName, displaySetting = 'block', loaderGifRoute = 'loader' }) {
 
     const THRESHOLD_VALUE_LOCALSTORAGE_KEY = "threshCompPercentilesAndPlotColors";
 
@@ -52,17 +53,15 @@ function ThreshCompUI({ siteName, bmpName, displaySetting = 'block' }) {
 
     const [plotData, setPlotData] = useLocalStorage('bmpThreshComparisonPlotData', []);
 
-    // testing
-    useEffect(() => {
-        console.log("activeAnalytes")
-        console.log(activeAnalytes)
-    }, [activeAnalytes])
 
-    // testing
+
+    const [isLoading, setIsLoading] = useState(false);
+    // Preload the loading image when the component mounts
     useEffect(() => {
-        console.log("threshVals")
-        console.log(threshVals)
-    }, [threshVals])
+        const img = new Image();
+        img.src = loaderGifRoute;
+    }, [loaderGifRoute]); // Depend on imageUrl to reload if the URL changes
+
 
     // Fetch Analytes when a BMP name is selected
     useEffect(() => {
@@ -70,8 +69,6 @@ function ThreshCompUI({ siteName, bmpName, displaySetting = 'block' }) {
         fetch(`analytes?sitename=${encodeURIComponent(siteName)}&bmpname=${encodeURIComponent(bmpName)}`) // Your API endpoint for fetching analytes
             .then((response) => response.json())
             .then((data) => {
-                console.log("Response from analytes API call:")
-                console.log(data)
                 setAnalytes((a) => data.analytes);
                 setActiveAnalytes([]); // reset
             });
@@ -97,6 +94,7 @@ function ThreshCompUI({ siteName, bmpName, displaySetting = 'block' }) {
             if (!confirmed) return;
         }
 
+        setIsLoading(true);
         fetch('thresh-comparison-data', { // the threshcomparison route is to be created later
             method: 'post',
             headers: {
@@ -120,8 +118,6 @@ function ThreshCompUI({ siteName, bmpName, displaySetting = 'block' }) {
                 return response.json();
             })
             .then(data => {
-                console.log("data")
-                console.log(data)
                 setPlotData(d => [...d, ...data])
             })
             .catch(error => {
@@ -136,7 +132,8 @@ function ThreshCompUI({ siteName, bmpName, displaySetting = 'block' }) {
                     // For unexpected errors (e.g., network errors), log the whole error
                     console.error('Unexpected error:', error);
                 }
-            });
+            })
+            .finally(() => setIsLoading(false));
     }
 
 
@@ -263,7 +260,31 @@ function ThreshCompUI({ siteName, bmpName, displaySetting = 'block' }) {
                 </div>
             </div>
         </div>
-
+        
+        {/* Loader GIF Modal Window */}
+        <Modal
+            isOpen={isLoading}
+            style={{
+                content: {
+                    top: '50%',
+                    left: '50%',
+                    right: 'auto',
+                    bottom: 'auto',
+                    marginRight: '-50%',
+                    transform: 'translate(-50%, -50%)',
+                    border: 'none', // Optionally remove the border
+                    background: 'transparent', // Optionally make the background transparent
+                    overflow: 'hidden', // Hide overflow
+                },
+                overlay: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Semi-transparent overlay
+                },
+            }}
+            ariaHideApp={false} // Add this to avoid warning for apps not mounted on the root
+            contentLabel="Loading"
+        >
+            <img src={loaderGifRoute} alt="Loading..." height={250} width={250} />
+        </Modal>
     </div>)
 }
 

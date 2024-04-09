@@ -60,7 +60,6 @@
 <script>
     document.getElementById('login-form').addEventListener('submit', function(e){
         e.preventDefault();
-        console.log('submitted')
         const pw = document.getElementById('password').value;
         fetch('login', {
             method: 'post',
@@ -72,8 +71,6 @@
             })
         }).then(r => r.json()).then(data => {
             if (data.success) {
-                console.log('data.redirect')
-                console.log(data.redirect)
                 window.location = data.redirect;
             } else {
                 alert('failed attempt')

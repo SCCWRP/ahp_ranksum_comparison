@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import DataDetailsModalWindow from './DataDetailsModal'
+import DataDetailsModalWindow from './Modals'
 
 import * as d3 from 'd3';
 
@@ -26,10 +26,6 @@ const IndexComparisonChart = ({
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedModalData, setSelectedModalData] = useState({});
-
-
-    console.log("plotData (Index Comparison)")
-    console.log(plotData)
 
 
     useEffect(() => {
