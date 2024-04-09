@@ -25,7 +25,7 @@ const IndexComparisonChart = ({
     const [plotHeight, setPlotHeight] = useState(plotWidth * (9 / 16))
 
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [selectedModalData, setSelectedModalData] = useState(null);
+    const [selectedModalData, setSelectedModalData] = useState({});
 
 
     console.log("plotData (Index Comparison)")
@@ -157,6 +157,25 @@ const IndexComparisonChart = ({
                     .style("display", "none");
             };
 
+            const setModalData = (event, d) => {
+
+                const scoreType = String(event.target.className.baseVal).replace('dot-', '');
+
+                const summaryData = {
+                    [`${scoreType === 'ahp' ? 'AHP' : 'Ranksum'} Mashup Score`]  : d[`${scoreType}_mashup_score`]
+                }
+
+                setSelectedModalData(
+                    {
+                        summaryData: summaryData,
+                        detailedData: d.analytes
+                    }
+                );
+                setIsModalOpen(true);
+
+            }
+
+
 
             svg.selectAll(".dot-ahp")
                 .data(plotData)
@@ -169,10 +188,7 @@ const IndexComparisonChart = ({
                 .style("cursor", "pointer") // Change cursor on hover
                 .on("mouseover", showTooltip)
                 .on("mouseout", hideTooltip)
-                .on("click", (event, d) => {
-                    setSelectedAnalyteData(d); // Assuming 'd' contains the 'analytes' array and other info
-                    setIsModalOpen(true);
-                });
+                .on("click", setModalData );
 
             svg.selectAll(".dot-ranksum")
                 .data(plotData)
@@ -185,10 +201,7 @@ const IndexComparisonChart = ({
                 .style("cursor", "pointer") // Change cursor on hover
                 .on("mouseover", showTooltip)
                 .on("mouseout", hideTooltip)
-                .on("click", (event, d) => {
-                    setSelectedModalData(d.analytes); // Assuming 'd' contains the 'analytes' array and other info
-                    setIsModalOpen(true);
-                });
+                .on("click", setModalData );
 
         }
     }, [plotData, ahpColor, ranksumColor, plotWidth, plotHeight]);

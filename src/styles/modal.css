@@ -1,0 +1,32 @@
+.modal-close-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: transparent;
+    border: none;
+    font-size: 1.5em;
+    cursor: 'pointer';
+    color: #000; /* Default to dark color for light backgrounds */
+}
+
+/* Dark mode adjustments */
+@media (prefers-color-scheme: dark) {
+    .close-button {
+        color: #fff; /* Light color for dark backgrounds */
+    }
+}
+
+.summary-list {
+    list-style-type: none; /* Removes default list styling */
+    padding: 0; /* Removes default padding */
+    margin-bottom: 20px; /* Adds some space below the summary list */
+    margin-top: 20px; /* Adds some space below the summary list */
+}
+
+.summary-list li {
+    margin-bottom: 5px; /* Adds space between list items */
+}
+
+.summary-list strong {
+    font-weight: bold; /* Makes the key part of each item bold */
+}

@@ -10,14 +10,16 @@ import DropdownSelector from './components/DropdownSelector';
 import './styles/generic.css'
 import '../node_modules/bootstrap/dist/css/bootstrap.min.css';
 import ThreshCompUI from './ThreshCompUI';
+import useLocalStorage from './hooks/useLocalStorage';
 
+const DEFAULT_SELECTED_SITE = 'Shop Creek Wetland-Pond (1990-94)';
 
 function App() {
 
-    const [activeUI, setActiveUI] = useState('ahp');
+    const [activeUI, setActiveUI] = useLocalStorage('bmpIndexComparisonAppActiveUI', 'ahp');
 
     const [siteNames, setSiteNames] = useState([]);
-    const [selectedSiteName, setSelectedSiteName] = useState('');
+    const [selectedSiteName, setSelectedSiteName] = useLocalStorage('bmpIndexComparisonAppActiveSite', DEFAULT_SELECTED_SITE);
     const [bmpNames, setBmpNames] = useState([]);
     const [selectedBmpName, setSelectedBmpName] = useState('');
 
@@ -31,7 +33,15 @@ function App() {
                 setSiteNames(data.sitenames);
                 // Automatically select the first site name (if available)
                 if (data.sitenames.length > 0) {
-                    setSelectedSiteName(data.sitenames[0]);
+                    setSelectedSiteName(
+                        s => {
+                            return (
+                                document.getElementById('sitename-select').querySelector(`option[value="${s}"]`)
+                                    ? s
+                                    : data.sitenames[0]
+                            )
+                        }
+                    );
                 }
             });
     }, []);
@@ -91,7 +101,7 @@ function App() {
                             onChange={(e) => setActiveUI(e.target.value)}
                         />
                         <label className="form-check-label" htmlFor="ahpUI">
-                            AHP Rank Sum Comparison
+                            AHP vs Ranksum Direct Comparison
                         </label>
                     </div>
                     <div className="form-check form-check-inline">
@@ -105,7 +115,7 @@ function App() {
                             onChange={(e) => setActiveUI(e.target.value)}
                         />
                         <label className="form-check-label" htmlFor="threshUI">
-                            Threshold Comparison
+                            Comparison with Simulation of Well/Poor Performing BMPs by Adjusting Thresholds
                         </label>
                     </div>
                 </div>
@@ -117,9 +127,9 @@ function App() {
             {/* Ternary operation to conditionally render UI based on activeUI state */}
             {/* Doing it this way makes it so both components render, but only one is displayed. This prevents them from re rendering when they toggle between the two */}
 
-            <AHPRankSumCompUI siteName={selectedSiteName} bmpName={selectedBmpName} displaySetting={activeUI === 'ahp' ? 'block' : 'none'}/>
+            <AHPRankSumCompUI siteName={selectedSiteName} bmpName={selectedBmpName} displaySetting={activeUI === 'ahp' ? 'block' : 'none'} />
 
-            <ThreshCompUI siteName={selectedSiteName} bmpName={selectedBmpName} displaySetting={activeUI === 'ahp' ? 'none' : 'block'}/>
+            <ThreshCompUI siteName={selectedSiteName} bmpName={selectedBmpName} displaySetting={activeUI === 'ahp' ? 'none' : 'block'} />
 
 
 

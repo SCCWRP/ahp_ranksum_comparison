@@ -30,7 +30,7 @@ const ThreshComparisonChart = ({
     const [plotHeight, setPlotHeight] = useState(plotWidth * plotXYRatio)
 
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [selectedModalData, setSelectedModalData] = useState(null);
+    const [selectedModalData, setSelectedModalData] = useState({});
 
     useEffect(() => {
         const handleResize = debounce(() => {
@@ -168,7 +168,22 @@ const ThreshComparisonChart = ({
                 .on("mouseover", showTooltip)
                 .on("mouseout", hideTooltip)
                 .on("click", (event, d) => {
-                    setSelectedModalData(d.threshold_values); // Assuming 'd' contains the 'analytes' array and other info
+                    console.log("scoreProperty.replace('_mashup_score') ")
+                    console.log(scoreProperty.replace('_mashup_score'))
+                    const analyteDetails = d.analytes;
+
+                    const summaryData = {
+                        "Threshold Percentile" : d.thresh_percentile,
+                        [`${scoreProperty.replace('_mashup_score','') == 'ahp' ? 'AHP' : 'Ranksum'} Mashup Score`] : d[scoreProperty]
+                    }
+
+                    setSelectedModalData(
+                        {
+                            summaryData: summaryData,
+                            detailedData: analyteDetails
+                        }
+                    );
+
                     setIsModalOpen(true);
                 });
         }

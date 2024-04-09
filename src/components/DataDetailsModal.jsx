@@ -1,10 +1,16 @@
 import React from 'react';
 import Modal from 'react-modal';
 
+import '../styles/modal.css'
+
 function DataDetailsModalWindow({ isOpen, onRequestClose, data, labelText }) {
+
+    const detailedData = data.detailedData;
+    const summaryData = data.summaryData;
+    
     // Generate table rows dynamically based on data properties
-    const generateTableRows = (data) => {
-        return data.map((val, index) => (
+    const generateTableRows = (detailedData) => {
+        return detailedData.map((val, index) => (
             <tr key={index}>
                 {Object.keys(val).map((key, idx) => (
                     <td key={idx}>{typeof val[key] === 'object' ? JSON.stringify(val[key]) : val[key]}</td>
@@ -14,8 +20,8 @@ function DataDetailsModalWindow({ isOpen, onRequestClose, data, labelText }) {
     };
 
     // Define table headers based on the first analyte's keys if available
-    const tableHeaders = data && data.length > 0
-        ? Object.keys(data[0]).map((key, index) => (
+    const tableHeaders = detailedData && detailedData.length > 0
+        ? Object.keys(detailedData[0]).map((key, index) => (
             <th key={index} scope="col">{key.replace(/_/g, ' ').toUpperCase()}</th>
         ))
         : [];
@@ -38,6 +44,13 @@ function DataDetailsModalWindow({ isOpen, onRequestClose, data, labelText }) {
         }
     };
 
+    // Generate list items dynamically based on summaryData properties
+    const generateSummaryListItems = (summaryData) => {
+        return Object.entries(summaryData).map(([key, value], index) => (
+            <li key={index}><strong>{key}:</strong> {value}</li>
+        ));
+    };
+
     return (
         <Modal
             isOpen={isOpen}
@@ -46,18 +59,26 @@ function DataDetailsModalWindow({ isOpen, onRequestClose, data, labelText }) {
             ariaHideApp={false}
             style={modalStyle} // Apply the custom styles
         >
+            <button
+                onClick={onRequestClose}
+                className="modal-close-button"
+            >
+                &times; {/* HTML entity for the multiplication sign, used as a close icon */}
+            </button>
             <h3>{labelText}</h3>
-            {data && (
+            <ul className="summary-list">
+                {summaryData && generateSummaryListItems(summaryData)}
+            </ul>
+            {detailedData && (
                 <div className="table-responsive"> {/* Responsive table container */}
                     <table className="table table-striped table-hover"> {/* Bootstrap classes added */}
                         <thead className="thead-dark"> {/* Added class for a dark table header */}
                             <tr>{tableHeaders}</tr>
                         </thead>
-                        <tbody>{generateTableRows(data)}</tbody>
+                        <tbody>{generateTableRows(detailedData)}</tbody>
                     </table>
                 </div>
             )}
-            <button className="btn btn-secondary" onClick={onRequestClose}>Close</button> {/* Bootstrap button classes */}
         </Modal>
     );
 }

@@ -602,6 +602,16 @@ def getdata():
     ahpmash = mashup_index(wqindexdf.performance_index.values, wqindexdf.ahp_weights.values)
     rankmash = mashup_index(wqindexdf.performance_index.values, wqindexdf.ranksum_weights.values)
     
+    
+    wqindexdf['performance_index'] = wqindexdf['performance_index'].apply(lambda x: round(x, 2))
+    
+    analytes = pd.DataFrame(analytes).merge(
+            wqindexdf[['analyte','performance_index','number_of_events']].rename(columns = {'analyte':'analytename', 'performance_index':'individual_score'}),
+            on = 'analytename',
+            how = 'left'
+        ) \
+        .to_dict('records')
+    
     resp = {
         "sitename"             : sitename,
         "bmpname"              : firstbmp,
@@ -640,6 +650,8 @@ def threshdata():
     
     
     analytes = params.get('analytes')
+    print("analytes")
+    print(analytes)
     # analytes should be a list
     # [
     #     {
@@ -821,6 +833,30 @@ def threshdata():
             warning_message = f"Plot color not found for percentile {thresh_percentile}"
             thresh_color = "#000000"
         
+        wqindexdf['performance_index'] = wqindexdf['performance_index'].apply(lambda x: round(x, 2))
+        
+        print("wqindexdf")
+        print(wqindexdf)
+        print("analytes")
+        print(analytes)
+    
+        tmp_analytes = pd.DataFrame(analytes).merge(
+                (
+                    wqindexdf[['analyte','performance_index','number_of_events']]
+                        .assign(
+                            threshold_percentile = thresh_percentile,
+                            threshold_value =  wqindexdf.analyte.apply(lambda a: round(threshold_values.get(a).get('threshold_value'), 2) )
+                        )
+                        .rename(columns = {'analyte':'analytename', 'performance_index':'individual_score'})
+                ),
+                on = 'analytename',
+                how = 'left'
+            )[['analytename','individual_score','rank','number_of_events','threshold_value','unit','threshold_percentile']] \
+            .to_dict('records')
+        
+        print("tmp_analytes")
+        print(tmp_analytes)
+        
         
         all_scores.append({
             "thresh_percentile"    : thresh_percentile,
@@ -830,7 +866,7 @@ def threshdata():
             "bmpname"              : firstbmp,
             "firstbmp"             : firstbmp,
             "lastbmp"              : lastbmp,
-            "analytes"             : analytes,
+            "analytes"             : tmp_analytes,
             "analytenames"         : list(threshold_values.keys()),
             "rankings"             : rankings_dict,
             "n_params"             : len(thresh_percentiles_df),
