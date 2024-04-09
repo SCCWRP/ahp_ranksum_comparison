@@ -1,7 +1,7 @@
 import React from 'react';
 import AnalyteRow, { SimpleAnalyteRow } from './AnalyteRow'; // Assuming AnalyteRow is your component for rendering each row
 
-const AnalyteTable = ({ showAnalytes, analytes, siteName, bmpName, universalThreshPercentile, setAnalytes }) => {
+const AnalyteTable = ({ showAnalytes, analytes, siteName, bmpName, universalThreshPercentile, consecutiveAnalytes, setAnalytes }) => {
     
     return (
         <div className="table-responsive" style={{ display: showAnalytes ? 'block' : 'none' }}>
@@ -27,6 +27,7 @@ const AnalyteTable = ({ showAnalytes, analytes, siteName, bmpName, universalThre
                             rank={analyte.rank}
                             isEnabled={analyte.isActive}
                             universalThreshPercentile={universalThreshPercentile}
+                            consecutiveAnalytes={consecutiveAnalytes}
                             setAnalytes={setAnalytes} // so the checkbox can affect the active analytes
                         />
                     ))}
@@ -40,7 +41,7 @@ const AnalyteTable = ({ showAnalytes, analytes, siteName, bmpName, universalThre
 export default AnalyteTable;
 
 
-export const SimpleAnalyteTable = ({ showAnalytes, siteName, bmpName, analytes, setAnalytes }) => {
+export const SimpleAnalyteTable = ({ showAnalytes, siteName, bmpName, analytes, consecutiveAnalytes, setAnalytes }) => {
     
     return (
         <div className="table-responsive" style={{ display: showAnalytes ? 'block' : 'none' }}>
@@ -61,6 +62,7 @@ export const SimpleAnalyteTable = ({ showAnalytes, siteName, bmpName, analytes, 
                             unit={analyte.unit}
                             rank={analyte.rank}
                             isEnabled={analyte.isActive}
+                            consecutiveAnalytes={consecutiveAnalytes}
                             setAnalytes={setAnalytes} // so the checkbox can affect the active analytes
                         />
                     ))}

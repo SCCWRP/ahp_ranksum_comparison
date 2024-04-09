@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import '../styles/generic.css'
 import '../../node_modules/bootstrap/dist/css/bootstrap.min.css'
 
-function AnalyteRow({ siteName, bmpName, analytename , unit, rank, isEnabled, setAnalytes, initialThreshPercentile = 0.25, universalThreshPercentile = 0.25 }) {
+function AnalyteRow({ siteName, bmpName, analytename , unit, rank, isEnabled, consecutiveAnalytes, setAnalytes, initialThreshPercentile = 0.25, universalThreshPercentile = 0.25 }) {
     const [threshPercentile, setThreshPercentile] = useState(initialThreshPercentile);
     const [threshVal, setThreshVal] = useState(1);
 
@@ -162,11 +162,18 @@ function AnalyteRow({ siteName, bmpName, analytename , unit, rank, isEnabled, se
                 <input type="number" className="form-control" value={rank}
                     onChange={(e) => {
                         const newRank = Number(e.target.value);
+
+                        
+
                         setAnalytes(prev => {
                             const updatedAnalytes = [...prev]; // Clone the array to avoid direct mutation
                             const currentAnalyteIndex = updatedAnalytes.findIndex(a => a.analytename === analytename);
                             const currentAnalyte = updatedAnalytes[currentAnalyteIndex];
                             const oldRank = currentAnalyte.rank;
+
+                            if (!consecutiveAnalytes) {
+                                return prev.map(analyte => analyte.analytename == analytename ? {...analyte, rank: newRank} : analyte)
+                            }
                     
                             if (newRank === oldRank) {
                                 // No rank change, just return the original array
@@ -207,7 +214,7 @@ export default AnalyteRow;
 
 
 
-export function SimpleAnalyteRow({analytename, unit, rank, isEnabled, setAnalytes }) {
+export function SimpleAnalyteRow({analytename, unit, rank, isEnabled, consecutiveAnalytes, setAnalytes }) {
 
     // Inside AnalyteRow component
 
@@ -248,11 +255,16 @@ export function SimpleAnalyteRow({analytename, unit, rank, isEnabled, setAnalyte
                 <input type="number" className="form-control" value={rank}
                     onChange={(e) => {
                         const newRank = Number(e.target.value);
+                        
                         setAnalytes(prev => {
                             const updatedAnalytes = [...prev]; // Clone the array to avoid direct mutation
                             const currentAnalyteIndex = updatedAnalytes.findIndex(a => a.analytename === analytename);
                             const currentAnalyte = updatedAnalytes[currentAnalyteIndex];
                             const oldRank = currentAnalyte.rank;
+                            
+                            if (!consecutiveAnalytes) {
+                                return prev.map(analyte => analyte.analytename == analytename ? {...analyte, rank: newRank} : analyte)
+                            }
                     
                             if (newRank === oldRank) {
                                 // No rank change, just return the original array

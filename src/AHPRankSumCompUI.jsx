@@ -19,6 +19,7 @@ function AHPRankSumCompUI({siteName, bmpName, displaySetting = 'block' }) {
     const [ranksumColor, setRanksumColor] = useState('#0000FF');
 
     const [showAnalytes, setShowAnalytes] = useState(true);
+    const [consecutiveAnalytes, setConsecutiveAnalytes] = useState(true);
     const [analytes, setAnalytes] = useState([]);
     
     
@@ -181,8 +182,8 @@ function AHPRankSumCompUI({siteName, bmpName, displaySetting = 'block' }) {
             </div>
         </div>
 
-        <div class="row mb-3">
-            <div className="col-12">
+        <div class="row mt-5 mb-3">
+            <div className="col-3">
                 <div className="form-check">
                     <input
                         type="checkbox"
@@ -196,6 +197,20 @@ function AHPRankSumCompUI({siteName, bmpName, displaySetting = 'block' }) {
                     </label>
                 </div>
             </div>
+            <div className="col-4">
+                <div className="form-check">
+                    <input
+                        type="checkbox"
+                        className="form-check-input"
+                        id="maintain-consecutive-thresh-analytes"
+                        checked={consecutiveAnalytes}
+                        onChange={(e) => setConsecutiveAnalytes(e.target.checked)}
+                    />
+                    <label className="form-check-label" htmlFor="maintain-consecutive-thresh-analytes">
+                        Maintain Strict Consecutive Order for Analyte Ranking
+                    </label>
+                </div>
+            </div>
         </div>
 
 
@@ -205,6 +220,7 @@ function AHPRankSumCompUI({siteName, bmpName, displaySetting = 'block' }) {
             siteName={siteName}
             bmpName={bmpName}
             universalThreshPercentile={universalThreshPercentile}
+            consecutiveAnalytes={consecutiveAnalytes}
             setAnalytes={setAnalytes}
         />
 

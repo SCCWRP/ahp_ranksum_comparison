@@ -48,6 +48,7 @@ function ThreshCompUI({ siteName, bmpName, displaySetting = 'block', loaderGifRo
     )
 
     const [showAnalytes, setShowAnalytes] = useState(true);
+    const [consecutiveAnalytes, setConsecutiveAnalytes] = useState(true);
     const [analytes, setAnalytes] = useState([]);
 
     const [plotData, setPlotData] = useLocalStorage('bmpThreshComparisonPlotData', []);
@@ -216,8 +217,8 @@ function ThreshCompUI({ siteName, bmpName, displaySetting = 'block', loaderGifRo
             </div>
         </div>
 
-        <div class="row mb-3">
-            <div className="col-12">
+        <div class="row mt-5 mb-3">
+            <div className="col-3">
                 <div className="form-check">
                     <input
                         type="checkbox"
@@ -231,6 +232,20 @@ function ThreshCompUI({ siteName, bmpName, displaySetting = 'block', loaderGifRo
                     </label>
                 </div>
             </div>
+            <div className="col-4">
+                <div className="form-check">
+                    <input
+                        type="checkbox"
+                        className="form-check-input"
+                        id="maintain-consecutive-thresh-analytes"
+                        checked={consecutiveAnalytes}
+                        onChange={(e) => setConsecutiveAnalytes(e.target.checked)}
+                    />
+                    <label className="form-check-label" htmlFor="maintain-consecutive-thresh-analytes">
+                        Maintain Strict Consecutive Order for Analyte Ranking
+                    </label>
+                </div>
+            </div>
         </div>
 
 
@@ -240,6 +255,7 @@ function ThreshCompUI({ siteName, bmpName, displaySetting = 'block', loaderGifRo
             bmpName={bmpName}
             analytes={analytes}
             setAnalytes={setAnalytes}
+            consecutiveAnalytes={consecutiveAnalytes}
         />
 
 
