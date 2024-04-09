@@ -13,8 +13,29 @@ function AnalyteRow({ siteName, bmpName, analytename , unit, rank, isEnabled, se
 
     // Inside AnalyteRow component
 
-    function handleCheckboxChange() {
-        setAnalytes(prev => prev.map(a => a.analytename == analytename ? {...a, isActive: !a.isActive } : a));
+    function handleCheckboxChange(e) {
+        const isChecked = e.target.checked;
+    
+        // Step 1: Update isActive for the changed analyte
+        setAnalytes(prev =>
+            prev.map(a =>
+                a.analytename === analytename ? { ...a, isActive: isChecked } : a
+            )
+        );
+    
+        // Step 2: Adjust the rankings in a separate operation to keep logic clear
+        setAnalytes(prev => {
+            // Filter active analytes and sort them by their current rank to maintain order
+            const activeAnalytes = prev.filter(a => a.isActive).sort((a, b) => a.rank - b.rank);
+    
+            // Assign new consecutive ranks to active analytes
+            activeAnalytes.forEach((a, index) => {
+                a.rank = index + 1;
+            });
+    
+            // Merge back with inactive analytes and sort by name or another stable property to maintain list order
+            return [...activeAnalytes, ...prev.filter(a => !a.isActive)].sort((a, b) => a.analytename.localeCompare(b.analytename));
+        });
     }
 
 
@@ -158,9 +179,31 @@ export function SimpleAnalyteRow({analytename, unit, rank, isEnabled, setAnalyte
 
     // Inside AnalyteRow component
 
-    function handleCheckboxChange() {
-        setAnalytes(prev => prev.map(a => { return a.analytename == analytename ? {...a, isActive: !a.isActive } : a } ));
+    function handleCheckboxChange(e) {
+        const isChecked = e.target.checked;
+    
+        // Step 1: Update isActive for the changed analyte
+        setAnalytes(prev =>
+            prev.map(a =>
+                a.analytename === analytename ? { ...a, isActive: isChecked } : a
+            )
+        );
+    
+        // Step 2: Adjust the rankings in a separate operation to keep logic clear
+        setAnalytes(prev => {
+            // Filter active analytes and sort them by their current rank to maintain order
+            const activeAnalytes = prev.filter(a => a.isActive).sort((a, b) => a.rank - b.rank);
+    
+            // Assign new consecutive ranks to active analytes
+            activeAnalytes.forEach((a, index) => {
+                a.rank = index + 1;
+            });
+    
+            // Merge back with inactive analytes and sort by name or another stable property to maintain list order
+            return [...activeAnalytes, ...prev.filter(a => !a.isActive)].sort((a, b) => a.analytename.localeCompare(b.analytename));
+        });
     }
+    
 
     return (
         <tr style={{ opacity: isEnabled ? 1 : 0.5 }}>

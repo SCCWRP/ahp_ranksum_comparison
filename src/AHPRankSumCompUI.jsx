@@ -33,7 +33,7 @@ function AHPRankSumCompUI({siteName, bmpName, displaySetting = 'block' }) {
         fetch(`analytes?sitename=${encodeURIComponent(siteName)}&bmpname=${encodeURIComponent(bmpName)}`) // Your API endpoint for fetching analytes
             .then((response) => response.json())
             .then((data) => {
-                setAnalytes((a) => data.analytes.map(a => {return {...a, isActive: true}}));
+                setAnalytes((a) => data.analytes.map((a, i) => {return {...a, isActive: true, rank: i + 1}}));
             });
     }, [siteName, bmpName]);
 
