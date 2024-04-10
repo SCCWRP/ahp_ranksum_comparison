@@ -142,8 +142,6 @@ function ThreshCompUI({ siteName, bmpName, displaySetting = 'block', loaderGifRo
                 return response.json();
             })
             .then(data => {
-                console.log('data')
-                console.log(data)
                 // First, assign a hashId to each data object in the array
                 const newData = data.map(d => ({
                     ...d,
@@ -355,10 +353,7 @@ function ThreshCompUI({ siteName, bmpName, displaySetting = 'block', loaderGifRo
                     <button
                         id="download-current-data-btn"
                         className="btn btn-primary"
-                        onClick={(e) => {
-
-                            console.log(`plotData for ${siteName}`)
-                            console.log(plotData.filter(i => ((i.sitename == siteName))))
+                        onClick={(e) => 
 
                             const currentSitePlotData = plotData.filter(i => ((i.sitename == siteName))).map(d => {
                                 return d.analytes.map(({ isActive, ...rest }) => {
@@ -432,9 +427,6 @@ function ThreshCompUI({ siteName, bmpName, displaySetting = 'block', loaderGifRo
                         className="btn btn-primary"
                         onClick={(e) => {
 
-                            console.log("plotData")
-                            console.log(plotData)
-
                             const allSitesPlotData = plotData.map(d => {
                                 return d.analytes.map(({ isActive, ...rest }) => {
                                     return {
@@ -485,7 +477,7 @@ function ThreshCompUI({ siteName, bmpName, displaySetting = 'block', loaderGifRo
                                     window.URL.revokeObjectURL(fileUrl); // Clean up
                                 })
                                 .catch(error => {
-                                    console.log("Error fetching Thresh all site comparison data", error);
+                                    console.error("Error fetching Thresh all site comparison data", error);
                                     alert("Data did not download successfully - please try again")
                                 })
                                 .finally(() => setIsLoading(false))

@@ -6,7 +6,7 @@ from datetime import timedelta
 # Blueprint imports 
 # from .example_blueprint_file import example_blueprint
 from .main import homepage
-from .dataapi import dataapi
+from .data import data_api
 from .imgserver import imgserver
 from .download import download
 
@@ -59,6 +59,6 @@ def teardown_request(exception):
 
 # Blueprints
 app.register_blueprint(homepage)
-app.register_blueprint(dataapi)
+app.register_blueprint(data_api)
 app.register_blueprint(imgserver)
 app.register_blueprint(download)

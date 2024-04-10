@@ -102,8 +102,6 @@ function AHPRankSumCompUI({ siteName, bmpName, displaySetting = 'block', loaderG
                 return response.json();
             })
             .then(data => {
-                console.log('data')
-                console.log(data)
                 // Generate a hashId for the incoming data object
                 data.hashId = uniqueIdForDataPoint(data);
             

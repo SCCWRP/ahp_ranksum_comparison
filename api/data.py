@@ -4,12 +4,12 @@ from flask import Blueprint, request, render_template, jsonify, g
 
 from .utils import get_raw_wq_data, wq_index, calc_ahp_weights, calc_ranksum_weights, fix_thresh_units, mashup_index
 
-dataapi = Blueprint('dataapi', __name__, template_folder = 'templates')
+data_api = Blueprint('data_api', __name__, template_folder = 'templates')
 
 # for printing
 pd.set_option('display.max_columns', 15)
 
-@dataapi.route('/sitenames', methods = ['GET'])
+@data_api.route('/sitenames', methods = ['GET'])
 def sitenames():
     eng = g.eng
     
@@ -40,7 +40,7 @@ def sitenames():
 ############################################################################################################################################
 
 
-@dataapi.route('/bmpnames', methods = ['GET'])
+@data_api.route('/bmpnames', methods = ['GET'])
 def bmpnames():
     eng = g.eng
     
@@ -116,7 +116,7 @@ def bmpnames():
 
 
 # All BMP Types
-@dataapi.route('/bmptypes', methods = ['GET'])
+@data_api.route('/bmptypes', methods = ['GET'])
 def bmptypes():
     eng = g.eng
 
@@ -132,7 +132,7 @@ def bmptypes():
 ##############################################################################################################################
     
 # Only applies to Water Quality
-@dataapi.route('/analytes', methods = ['GET'])
+@data_api.route('/analytes', methods = ['GET'])
 def analytes():
     eng = g.eng
     
@@ -214,7 +214,7 @@ def analytes():
     
     
 # Only applies to Water Quality
-@dataapi.route('/threshval', methods = ['GET'])
+@data_api.route('/threshval', methods = ['GET'])
 def threshvals():
     eng = g.eng
     
@@ -339,7 +339,7 @@ def threshvals():
 
 
 # Only applies to Water Quality
-@dataapi.route('/percentileval', methods = ['GET'])
+@data_api.route('/percentileval', methods = ['GET'])
 def percentilevals():
     eng = g.eng
     
@@ -456,7 +456,7 @@ def percentilevals():
     
     
 # Actually get the data (This route is for water quality - if they request for hydrology we can build that later - too much time to put in to build that right now)
-@dataapi.route('/direct-comparison-data', methods = ['GET', 'POST'])
+@data_api.route('/direct-comparison-data', methods = ['GET', 'POST'])
 def directcomparison():
     eng = g.eng
     
@@ -648,7 +648,7 @@ def directcomparison():
     
     
 # Actually get the data (This route is for water quality - if they request for hydrology we can build that later - too much time to put in to build that right now)
-@dataapi.route('/thresh-comparison-data', methods = ['GET', 'POST'])
+@data_api.route('/thresh-comparison-data', methods = ['GET', 'POST'])
 def threshdata():
     eng = g.eng
     
