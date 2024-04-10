@@ -102,6 +102,8 @@ function AHPRankSumCompUI({ siteName, bmpName, displaySetting = 'block', loaderG
                 return response.json();
             })
             .then(data => {
+                console.log('data')
+                console.log(data)
                 // Generate a hashId for the incoming data object
                 data.hashId = uniqueIdForDataPoint(data);
             
@@ -328,6 +330,8 @@ function AHPRankSumCompUI({ siteName, bmpName, displaySetting = 'block', loaderG
                                         rank: rest.rank,
                                         threshold_value: rest.threshold_value,
                                         unit: rest.unit,
+                                        ahp_weight: rest.ahp_weight,
+                                        ranksum_weight: rest.ranksum_weight,
                                         ahp_mashup_score: d.ahp_mashup_score,
                                         ranksum_mashup_score: d.ranksum_mashup_score,
                                         number_of_events: rest.number_of_events,
@@ -399,6 +403,8 @@ function AHPRankSumCompUI({ siteName, bmpName, displaySetting = 'block', loaderG
                                         rank: rest.rank,
                                         threshold_value: rest.threshold_value,
                                         unit: rest.unit,
+                                        ahp_weight: rest.ahp_weight,
+                                        ranksum_weight: rest.ranksum_weight,
                                         ahp_mashup_score: d.ahp_mashup_score,
                                         ranksum_mashup_score: d.ranksum_mashup_score,
                                         number_of_events: rest.number_of_events,

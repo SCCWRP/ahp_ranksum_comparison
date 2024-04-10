@@ -142,6 +142,8 @@ function ThreshCompUI({ siteName, bmpName, displaySetting = 'block', loaderGifRo
                 return response.json();
             })
             .then(data => {
+                console.log('data')
+                console.log(data)
                 // First, assign a hashId to each data object in the array
                 const newData = data.map(d => ({
                     ...d,
@@ -369,6 +371,8 @@ function ThreshCompUI({ siteName, bmpName, displaySetting = 'block', loaderGifRo
                                         threshold_value: rest.threshold_value,
                                         threshold_percentile: d.thresh_percentile,
                                         unit: rest.unit,
+                                        ahp_weight: rest.ahp_weight,
+                                        ranksum_weight: rest.ranksum_weight,
                                         ahp_mashup_score: d.ahp_mashup_score,
                                         ranksum_mashup_score: d.ranksum_mashup_score,
                                         number_of_events: rest.number_of_events,
@@ -442,6 +446,8 @@ function ThreshCompUI({ siteName, bmpName, displaySetting = 'block', loaderGifRo
                                         threshold_value: rest.threshold_value,
                                         threshold_percentile: d.thresh_percentile,
                                         unit: rest.unit,
+                                        ahp_weight: rest.ahp_weight,
+                                        ranksum_weight: rest.ranksum_weight,
                                         ahp_mashup_score: d.ahp_mashup_score,
                                         ranksum_mashup_score: d.ranksum_mashup_score,
                                         number_of_events: rest.number_of_events,

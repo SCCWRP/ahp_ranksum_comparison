@@ -604,13 +604,23 @@ def directcomparison():
     
     
     wqindexdf['performance_index'] = wqindexdf['performance_index'].apply(lambda x: round(x, 2))
+    wqindexdf['ahp_weights'] = wqindexdf.ahp_weights.apply(lambda w: round(w, 4))
+    wqindexdf['ranksum_weights'] = wqindexdf.ranksum_weights.apply(lambda w: round(w, 4))
     
     analytes = pd.DataFrame(analytes).merge(
-            wqindexdf[['analyte','performance_index','number_of_events']].rename(columns = {'analyte':'analytename', 'performance_index':'individual_score'}),
+            (
+                wqindexdf[['analyte','performance_index','number_of_events','ahp_weights','ranksum_weights']]
+                .rename(columns = {
+                    'analyte':'analytename', 'performance_index':'individual_score','ahp_weights':'ahp_weight','ranksum_weights':'ranksum_weight'
+                })
+            ),
             on = 'analytename',
             how = 'left'
         ) \
         .to_dict('records')
+    
+    print('wqindexdf')
+    print(wqindexdf)
     
     resp = {
         "sitename"             : sitename,
@@ -835,6 +845,9 @@ def threshdata():
         
         wqindexdf['performance_index'] = wqindexdf['performance_index'].apply(lambda x: round(x, 2))
         
+        wqindexdf['ahp_weights'] = wqindexdf.ahp_weights.apply(lambda w: round(w, 4))
+        wqindexdf['ranksum_weights'] = wqindexdf.ranksum_weights.apply(lambda w: round(w, 4))
+        
         print("wqindexdf")
         print(wqindexdf)
         print("analytes")
@@ -842,16 +855,18 @@ def threshdata():
     
         tmp_analytes = pd.DataFrame(analytes).merge(
                 (
-                    wqindexdf[['analyte','performance_index','number_of_events']]
+                    wqindexdf[['analyte','performance_index','number_of_events','ahp_weights','ranksum_weights']]
                         .assign(
                             threshold_percentile = thresh_percentile,
                             threshold_value =  wqindexdf.analyte.apply(lambda a: round(threshold_values.get(a).get('threshold_value'), 2) )
                         )
-                        .rename(columns = {'analyte':'analytename', 'performance_index':'individual_score'})
+                        .rename(columns = {
+                            'analyte': 'analytename', 'performance_index': 'individual_score', 'ahp_weights': 'ahp_weight', 'ranksum_weights': 'ranksum_weight'
+                        })
                 ),
                 on = 'analytename',
                 how = 'left'
-            )[['analytename','individual_score','rank','number_of_events','threshold_value','unit','threshold_percentile']] \
+            )[['analytename','individual_score','rank','number_of_events','threshold_value','unit','threshold_percentile','ahp_weight','ranksum_weight']] \
             .to_dict('records')
         
         print("tmp_analytes")
