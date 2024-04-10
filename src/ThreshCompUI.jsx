@@ -70,7 +70,7 @@ function ThreshCompUI({ siteName, bmpName, displaySetting = 'block', loaderGifRo
             .then((response) => response.json())
             .then((data) => {
                 // start off all analytes as active
-                setAnalytes((a) => data.analytes.map((d , i) => { return {...d, isActive: true, rank: (i + 1) } } ));
+                setAnalytes((a) => data.analytes.map((d, i) => { return { ...d, isActive: true, rank: (i + 1) } }));
             });
     }, [siteName, bmpName]);
 
@@ -79,10 +79,18 @@ function ThreshCompUI({ siteName, bmpName, displaySetting = 'block', loaderGifRo
 
         const activeAnalytes = analytes.filter(a => a.isActive);
 
-        console.log("analytes")
-        console.log(analytes)
-        console.log("activeAnalytes")
-        console.log(activeAnalytes)
+        // ranking must be integers
+        if (
+            !activeAnalytes.map((a) => {
+                console.log('a.rank');
+                console.log(a.rank);
+                return a.rank;
+            }).every(val => typeof val === 'number')
+        ) {
+                alert("Ranking values must be integers");
+                return;
+        }
+
 
         if (activeAnalytes.length < 2) {
             alert("Mashup score cannot be calculated with less than 2 parameters")
@@ -263,26 +271,26 @@ function ThreshCompUI({ siteName, bmpName, displaySetting = 'block', loaderGifRo
             <div class="chart-area-label mb-5" style={{ textAlign: 'center', fontSize: '20px' }}>Threshold Comparison Plots (simulating mashup scores for high/low performing BMPs)</div>
             <div className="row">
                 <div className="col-6">
-                    <ThreshComparisonChart 
-                        plotData={plotData.filter((d) => ((d.sitename == siteName) & (d.bmpname == bmpName)))} 
-                        scoreProperty="ahp_mashup_score" 
-                        colorProperty="threshold_color" 
-                        xAxisLabelText = 'AHP Score'
-                        title = 'AHP'
-                        />
+                    <ThreshComparisonChart
+                        plotData={plotData.filter((d) => ((d.sitename == siteName) & (d.bmpname == bmpName)))}
+                        scoreProperty="ahp_mashup_score"
+                        colorProperty="threshold_color"
+                        xAxisLabelText='AHP Score'
+                        title='AHP'
+                    />
                 </div>
                 <div className="col-6">
-                    <ThreshComparisonChart 
-                        plotData={plotData.filter((d) => ((d.sitename == siteName) & (d.bmpname == bmpName)))} 
-                        scoreProperty="ranksum_mashup_score" 
-                        colorProperty="threshold_color" 
-                        xAxisLabelText = 'Ranksum Score'
-                        title = 'Ranksum'
+                    <ThreshComparisonChart
+                        plotData={plotData.filter((d) => ((d.sitename == siteName) & (d.bmpname == bmpName)))}
+                        scoreProperty="ranksum_mashup_score"
+                        colorProperty="threshold_color"
+                        xAxisLabelText='Ranksum Score'
+                        title='Ranksum'
                     />
                 </div>
             </div>
         </div>
-        
+
         {/* Loader GIF Modal Window */}
         <Modal
             isOpen={isLoading}

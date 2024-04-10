@@ -43,10 +43,18 @@ function AHPRankSumCompUI({siteName, bmpName, displaySetting = 'block' }) {
 
         const activeAnalytes = analytes.filter(a => a.isActive);
 
-        console.log("analytes")
-        console.log(analytes)
-        console.log("activeAnalytes")
-        console.log(activeAnalytes)
+        // ranking must be integers
+        if (
+            !activeAnalytes.map((a) => {
+                console.log('a.rank');
+                console.log(a.rank);
+                return a.rank;
+            }).every(val => typeof val === 'number')
+        ) {
+                alert("Ranking values must be integers");
+                return;
+        }
+        
 
         if (activeAnalytes.length < 2) {
             alert("Mashup score cannot be calculated with less than 2 parameters")

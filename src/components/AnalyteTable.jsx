@@ -1,7 +1,19 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import AnalyteRow, { SimpleAnalyteRow } from './AnalyteRow'; // Assuming AnalyteRow is your component for rendering each row
 
 const AnalyteTable = ({ showAnalytes, analytes, siteName, bmpName, universalThreshPercentile, consecutiveAnalytes, setAnalytes }) => {
+
+    useEffect(()=>{
+        // if "consecutiveAnalytes" is reset - reset order of active analytes
+        if (consecutiveAnalytes) {
+            setAnalytes(anlts => {
+                anlts.map((a, i) => {
+                    {}
+                })
+            })
+        }
+
+    }, [consecutiveAnalytes])
     
     return (
         <div className="table-responsive" style={{ display: showAnalytes ? 'block' : 'none' }}>
@@ -17,7 +29,7 @@ const AnalyteTable = ({ showAnalytes, analytes, siteName, bmpName, universalThre
                     </tr>
                 </thead>
                 <tbody>
-                    {analytes.map((analyte, index) => (
+                    {analytes && analytes.map((analyte, index) => (
                         <AnalyteRow
                             key={index}
                             siteName={siteName}
