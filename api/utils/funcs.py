@@ -171,12 +171,18 @@ def get_raw_wq_data(conn, sitename = None, firstbmp = None, lastbmp = None, bmpt
         valid_lastbmps = pd.read_sql(f"SELECT DISTINCT lastbmp FROM vw_mashup_index_comparison_rawdata ORDER BY 1", conn).lastbmp.values
         
         assert sitename in valid_sitenames, f"sitename {sitename} not found in list of valid sitenames (distinct sitenames in the water quality table)"
-        assert firstbmp in valid_firstbmps, f"firstbmp {firstbmp} not found in list of valid firstbmps (distinct firstbmps in the water quality table)"
-        assert lastbmp in valid_lastbmps, f"lastbmp {lastbmp} not found in list of valid lastbmps (distinct lastbmps in the water quality table)"
+        assert (firstbmp in valid_firstbmps) or (firstbmp is None), f"firstbmp {firstbmp} not found in list of valid firstbmps (distinct firstbmps in the water quality table)"
+        assert (lastbmp in valid_lastbmps) or (lastbmp is None), f"lastbmp {lastbmp} not found in list of valid lastbmps (distinct lastbmps in the water quality table)"
         
         qry = f"""
-            SELECT sitename, firstbmp, lastbmp, analyte, inflow_emc, outflow_emc, inflow_emc_unit AS unit FROM vw_mashup_index_comparison_rawdata WHERE sitename = '{sitename}' AND firstbmp = '{firstbmp}' AND lastbmp = '{lastbmp}'
+            SELECT sitename, firstbmp, lastbmp, analyte, inflow_emc, outflow_emc, inflow_emc_unit AS unit FROM vw_mashup_index_comparison_rawdata WHERE sitename = '{sitename}'
         """
+        
+        if firstbmp is not None:
+            qry += f" AND firstbmp = '{firstbmp}'"
+        if lastbmp is not None:
+            qry += f" AND lastbmp = '{lastbmp}'"
+            
     else:
         valid_bmptypes = pd.read_sql(f"SELECT DISTINCT bmptype FROM vw_mashup_index_comparison_rawdata ORDER BY 1", conn).bmptype.values
         assert bmptype in valid_bmptypes, f"bmptype {bmptype} not found in list of valid bmptypes (distinct bmptypes in the water quality table)"

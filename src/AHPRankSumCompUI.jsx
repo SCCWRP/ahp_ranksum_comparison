@@ -245,7 +245,50 @@ function AHPRankSumCompUI({ siteName, bmpName, displaySetting = 'block', loaderG
         />
 
         <div class="row my-5 d-flex align-items-end">
-            <div className="col-6 form-check d-flex flex-column">
+        <div className="col-4 form-check d-flex flex-column">
+                <div className="mt-auto">
+                    <button
+                        id="download-current-data-btn"
+                        className="btn btn-primary"
+                        onClick={(e) => {
+                            setIsLoading(true);
+                            fetch(`rawdata?sitename=${encodeURIComponent(siteName)}`)
+                                .then(response => {
+                                    if (!response.ok) {
+                                        // If the response status code is not in the 200-299 range
+                                        // Throw an error and catch it later in the chain
+                                        throw new Error('Network response was not ok');
+                                    }
+                                    return response.blob();
+                                })
+                                .then(blob => {
+                                    // Create a new object URL for the blob
+                                    const fileUrl = window.URL.createObjectURL(blob);
+                        
+                                    // Create a new anchor element and trigger a download
+                                    const a = document.createElement('a');
+                                    a.href = fileUrl;
+                                    a.download = `${siteName} Raw Data.xlsx`; // Name of the downloaded file
+                                    document.body.appendChild(a);
+                                    a.click();
+                        
+                                    document.body.removeChild(a);
+                                    window.URL.revokeObjectURL(fileUrl); // Clean up
+                                })
+                                .catch(error => {
+                                    // Log the error or display an alert/message to the user
+                                    console.error('There was a problem with the fetch operation:', error);
+                                    alert('Failed to download the data. Please try again.'); // Example of user notification
+                                })
+                                .finally(() => setIsLoading(false));
+                        }}
+                        
+                    >
+                        Download Raw Data for {siteName}
+                    </button>
+                </div>
+            </div>
+            <div className="col-4 form-check d-flex flex-column">
                 <div className="mt-auto">
                     <button
                         id="download-current-data-btn"
@@ -300,7 +343,7 @@ function AHPRankSumCompUI({ siteName, bmpName, displaySetting = 'block', loaderG
                     </button>
                 </div>
             </div>
-            <div className="col-6 form-check d-flex flex-column">
+            <div className="col-4 form-check d-flex flex-column">
                 <div className="mt-auto">
                     <button
                         id="download-all-data-btn"
