@@ -105,7 +105,8 @@ const ThreshComparisonChart = ({
             const y = d3.scaleLinear()
                 .domain([
                     0,
-                    d3.max(plotData, d => d[scoreProperty])
+                    Math.max(d3.max(plotData, d => d['ahp_mashup_score']), d3.max(plotData, d => d['ranksum_mashup_score']))
+                    // d3.max(plotData, d => d[scoreProperty])
                 ])
                 .range([height, 0]);
             svg.append("g")
