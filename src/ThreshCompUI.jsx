@@ -353,7 +353,7 @@ function ThreshCompUI({ siteName, bmpName, displaySetting = 'block', loaderGifRo
                     <button
                         id="download-current-data-btn"
                         className="btn btn-primary"
-                        onClick={(e) => 
+                        onClick={(e) => {
 
                             const currentSitePlotData = plotData.filter(i => ((i.sitename == siteName))).map(d => {
                                 return d.analytes.map(({ isActive, ...rest }) => {
