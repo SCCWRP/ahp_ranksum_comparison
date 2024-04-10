@@ -156,10 +156,10 @@ function AnalyteRow({ siteName, bmpName, analytename , unit, rank, isEnabled, co
                     step="0.01" min="0" max="1" />
             </td>
             <td>
-                <input type="number" className="form-control" value={threshVal}
+                <input type="number" min="0" className="form-control" value={threshVal}
                     onChange={(e) => { 
                         setThreshVal(prev => {
-                            return Number(e.target.value) > 0 ? Number(e.target.value) : '';
+                            return Number(e.target.value);
                         }); 
                         setUserUpdatedThreshVal(true); 
                     }} 
