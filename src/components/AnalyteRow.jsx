@@ -97,14 +97,15 @@ function AnalyteRow({ siteName, bmpName, analytename , unit, rank, isEnabled, co
                 try {
                     const response = await fetch(`threshval?sitename=${encodeURIComponent(siteName)}&bmpname=${encodeURIComponent(bmpName)}&analyte=${encodeURIComponent(analytename)}&percentile=${encodeURIComponent(threshPercentile)}`);
                     if (!response.ok) {
-                        throw new Error('Network response was not ok');
+                        const error = await response.json();
+                        throw new Error(error.message ?? error);
                     }
                     const data = await response.json();
                     setThreshVal(Math.round(data.threshval * 100) / 100);
                     // Reset the flag after fetching
                     setUserUpdatedPercentile(false);
                 } catch (error) {
-                    console.error('Error fetching threshold value:', error);
+                    console.warn('Error fetching threshold value:', error.message ?? error);
                 }
             };
             fetchThreshVal();
@@ -119,14 +120,15 @@ function AnalyteRow({ siteName, bmpName, analytename , unit, rank, isEnabled, co
                 try {
                     const response = await fetch(`percentileval?sitename=${encodeURIComponent(siteName)}&bmpname=${encodeURIComponent(bmpName)}&analyte=${encodeURIComponent(analytename)}&threshval=${encodeURIComponent(threshVal)}`);
                     if (!response.ok) {
-                        throw new Error('Network response was not ok');
+                        const error = await response.json();
+                        throw new Error(error.message ?? error);
                     }
                     const data = await response.json();
                     setThreshPercentile(Math.round(data.percentile_rank * 100) / 100);
                     // Reset the flag after fetching
                     setUserUpdatedThreshVal(false);
                 } catch (error) {
-                    console.error('Error fetching percentile:', error);
+                    console.warn('Error fetching percentile:', error);
                 }
             };
             fetchThreshPercentile();
@@ -155,7 +157,13 @@ function AnalyteRow({ siteName, bmpName, analytename , unit, rank, isEnabled, co
             </td>
             <td>
                 <input type="number" className="form-control" value={threshVal}
-                    onChange={(e) => { setThreshVal(Number(e.target.value)); setUserUpdatedThreshVal(true); }} />
+                    onChange={(e) => { 
+                        setThreshVal(prev => {
+                            return Number(e.target.value) > 0 ? Number(e.target.value) : '';
+                        }); 
+                        setUserUpdatedThreshVal(true); 
+                    }} 
+                />
             </td>
             <td>{unit}</td>
             <td>

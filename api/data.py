@@ -216,6 +216,7 @@ def analytes():
 # Only applies to Water Quality
 @data_api.route('/threshval', methods = ['GET'])
 def threshvals():
+    
     eng = g.eng
     
     sitename = request.args.get('sitename')
@@ -341,6 +342,7 @@ def threshvals():
 # Only applies to Water Quality
 @data_api.route('/percentileval', methods = ['GET'])
 def percentilevals():
+    
     eng = g.eng
     
     sitename = request.args.get('sitename')
