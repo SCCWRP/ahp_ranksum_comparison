@@ -264,7 +264,7 @@ function ThreshCompUI({ siteName, bmpName, displaySetting = 'block', loaderGifRo
             </div>
         </div>
 
-
+        
         <SimpleAnalyteTable
             showAnalytes={showAnalytes}
             siteName={siteName}
@@ -273,6 +273,125 @@ function ThreshCompUI({ siteName, bmpName, displaySetting = 'block', loaderGifRo
             setAnalytes={setAnalytes}
             consecutiveAnalytes={consecutiveAnalytes}
         />
+
+
+<div class="row my-5 d-flex align-items-end">
+            <div className="col-6 form-check d-flex flex-column">
+                <div className="mt-auto">
+                    <button
+                        id="download-current-data-btn"
+                        className="btn btn-primary"
+                        onClick={(e) => {
+
+                            console.log(`plotData for ${siteName}`)
+                            console.log(plotData.filter(i => ((i.sitename == siteName))))
+
+                            const currentSitePlotData = plotData.filter(i => ((i.sitename == siteName))).map(d => {
+                                return d.analytes.map(({isActive, ...rest}) => {
+                                    return {
+                                        sitename: d.sitename,
+                                        bmpname: d.bmpname,
+                                        analytename: rest.analytename,
+                                        individual_score: rest.individual_score,
+                                        rank: rest.rank,
+                                        threshold_value: rest.threshold_value,
+                                        threshold_percentile: d.thresh_percentile,
+                                        unit: rest.unit,
+                                        ahp_mashup_score: d.ahp_mashup_score,
+                                        ranksum_mashup_score: d.ranksum_mashup_score,
+                                        number_of_events: rest.number_of_events,
+                                        n_params: d.n_params
+                                    }
+                                })
+                            }).flat()
+
+
+                            fetch('json-to-excel', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify(currentSitePlotData)
+                            })
+                                .then(response => response.blob())
+                                .then(blob => {
+                                    // Create a new object URL for the blob
+                                    const fileUrl = window.URL.createObjectURL(blob);
+
+                                    // Create a new anchor element and trigger a download
+                                    const a = document.createElement('a');
+                                    a.href = fileUrl;
+                                    a.download = `${siteName} Threshold Comparison Plot Data.xlsx`; // Name of the downloaded file
+                                    document.body.appendChild(a);
+                                    a.click();
+
+                                    document.body.removeChild(a);
+                                    window.URL.revokeObjectURL(fileUrl); // Clean up
+                                });
+                        }}
+                    >
+                        Download Plot Data for {siteName}
+                    </button>
+                </div>
+            </div>
+            <div className="col-6 form-check d-flex flex-column">
+                <div className="mt-auto">
+                    <button
+                        id="download-all-data-btn"
+                        className="btn btn-primary"
+                        onClick={(e) => {
+
+                            console.log("plotData")
+                            console.log(plotData)
+
+                            const allSitesPlotData = plotData.map(d => {
+                                return d.analytes.map(({isActive, ...rest}) => {
+                                    return {
+                                        sitename: d.sitename,
+                                        bmpname: d.bmpname,
+                                        analytename: rest.analytename,
+                                        individual_score: rest.individual_score,
+                                        rank: rest.rank,
+                                        threshold_value: rest.threshold_value,
+                                        threshold_percentile: d.thresh_percentile,
+                                        unit: rest.unit,
+                                        ahp_mashup_score: d.ahp_mashup_score,
+                                        ranksum_mashup_score: d.ranksum_mashup_score,
+                                        number_of_events: rest.number_of_events,
+                                        n_params: d.n_params
+                                    }
+                                })
+                            }).flat()
+
+                            fetch('json-to-excel', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify(allSitesPlotData)
+                            })
+                                .then(response => response.blob())
+                                .then(blob => {
+                                    // Create a new object URL for the blob
+                                    const fileUrl = window.URL.createObjectURL(blob);
+
+                                    // Create a new anchor element and trigger a download
+                                    const a = document.createElement('a');
+                                    a.href = fileUrl;
+                                    a.download = 'Threshold_Comparison_All_Sites.xlsx'; // Name of the downloaded file
+                                    document.body.appendChild(a);
+                                    a.click();
+
+                                    document.body.removeChild(a);
+                                    window.URL.revokeObjectURL(fileUrl); // Clean up
+                                });
+                        }}
+                    >
+                        Download Plot data for all sites
+                    </button>
+                </div>
+            </div>
+        </div>
 
 
         <div id="thresh-comparison-chart" className="mt-5">
