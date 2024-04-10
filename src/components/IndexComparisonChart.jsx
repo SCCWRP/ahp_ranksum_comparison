@@ -4,6 +4,7 @@ import DataDetailsModalWindow from './Modals'
 import * as d3 from 'd3';
 
 import debounce from '../utils/debounce';
+import uniqueIdForDataPoint from '../utils/hash';
 
 const IndexComparisonChart = ({
     title,
@@ -158,14 +159,14 @@ const IndexComparisonChart = ({
                 const clickX = x(d.n_params);
                 const clickY = y(d[`${scoreType}_mashup_score`]);
                 const threshold = 10; // Define a threshold for considering dots "close"
-            
+
                 // Find overlapping dots based on the threshold
                 const overlappingData = plotData.filter(data => {
                     const dataX = x(data.n_params);
                     const dataY = y(data[`${scoreType}_mashup_score`]);
                     return Math.sqrt(Math.pow(dataX - clickX, 2) + Math.pow(dataY - clickY, 2)) < threshold;
                 });
-            
+
                 // Map the overlapping data to the expected format for the modal
                 const paginatedModalData = overlappingData.map(data => ({
                     summaryData: {
@@ -173,12 +174,10 @@ const IndexComparisonChart = ({
                     },
                     detailedData: data.analytes.sort((a, b) => a.rank - b.rank).map(({ isActive, ...keepAttrs }) => keepAttrs)
                 }));
-            
+
                 setSelectedModalData(paginatedModalData);
                 setIsModalOpen(true);
             };
-            
-
 
 
             svg.selectAll(".dot-ahp")
@@ -192,7 +191,7 @@ const IndexComparisonChart = ({
                 .style("cursor", "pointer") // Change cursor on hover
                 .on("mouseover", showTooltip)
                 .on("mouseout", hideTooltip)
-                .on("click", setModalData );
+                .on("click", setModalData);
 
             svg.selectAll(".dot-ranksum")
                 .data(plotData)
@@ -205,7 +204,7 @@ const IndexComparisonChart = ({
                 .style("cursor", "pointer") // Change cursor on hover
                 .on("mouseover", showTooltip)
                 .on("mouseout", hideTooltip)
-                .on("click", setModalData );
+                .on("click", setModalData);
 
         }
     }, [plotData, ahpColor, ranksumColor, plotWidth, plotHeight]);

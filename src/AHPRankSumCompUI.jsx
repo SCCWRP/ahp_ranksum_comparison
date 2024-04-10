@@ -5,6 +5,7 @@ import Modal from 'react-modal';
 import IndexComparisonChart from './components/IndexComparisonChart'
 import ColorPicker from './components/ColorPicker';
 import AnalyteTable from './components/AnalyteTable';
+import uniqueIdForDataPoint from './utils/hash';
 
 // Custom Hooks
 import useLocalStorage from './hooks/useLocalStorage';
@@ -49,8 +50,6 @@ function AHPRankSumCompUI({ siteName, bmpName, displaySetting = 'block', loaderG
         // ranking must be integers
         if (
             !activeAnalytes.map((a) => {
-                console.log('a.rank');
-                console.log(a.rank);
                 return a.rank;
             }).every(val => typeof val === 'number')
         ) {
@@ -102,7 +101,22 @@ function AHPRankSumCompUI({ siteName, bmpName, displaySetting = 'block', loaderG
                 }
                 return response.json();
             })
-            .then(data => setPlotData(d => [...d, data]))
+            .then(data => {
+                // Generate a hashId for the incoming data object
+                data.hashId = uniqueIdForDataPoint(data);
+            
+                setPlotData(existingData => {
+                    const existingItemIndex = existingData.findIndex(item => item.hashId === data.hashId);
+            
+                    if (existingItemIndex !== -1) {
+                        // Ignore the new data and keep existingData as is
+                        return existingData;
+                    } else {
+                        // If no item with the same hashId exists, add the new data object to the array
+                        return [...existingData, data];
+                    }
+                });
+            })
             .catch(error => {
                 // Check if it's an expected error structure
                 if (error.status && error.message) {

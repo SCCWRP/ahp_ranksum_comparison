@@ -14,6 +14,7 @@ import useLocalStorage from './hooks/useLocalStorage';
 // Styles
 import './styles/generic.css'
 import '../node_modules/bootstrap/dist/css/bootstrap.min.css';
+import uniqueIdForDataPoint from './utils/hash';
 
 function ThreshCompUI({ siteName, bmpName, displaySetting = 'block', loaderGifRoute = 'loader' }) {
 
@@ -141,8 +142,28 @@ function ThreshCompUI({ siteName, bmpName, displaySetting = 'block', loaderGifRo
                 return response.json();
             })
             .then(data => {
-                setPlotData(d => [...d, ...data])
-            })
+                // First, assign a hashId to each data object in the array
+                const newData = data.map(d => ({
+                    ...d,
+                    hashId: uniqueIdForDataPoint(d)
+                }));
+            
+                setPlotData(existingData => {
+                    let existingDataClone = [...existingData];
+
+                    newData.forEach(d => {
+
+                        const existingItemIndex = existingData.findIndex(item => item.hashId === d.hashId);
+                        
+                        if (existingItemIndex === -1) {
+                            // If no item with the same hashId exists, add the new data object to the array
+                            existingDataClone = [...existingDataClone, d];
+                        }
+                    })
+
+                    return existingDataClone;
+                });
+            })            
             .catch(error => {
                 // Check if it's an expected error structure
                 if (error.status && error.message) {
