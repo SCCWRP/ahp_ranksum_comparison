@@ -104,10 +104,10 @@ function AHPRankSumCompUI({ siteName, bmpName, displaySetting = 'block', loaderG
             .then(data => {
                 // Generate a hashId for the incoming data object
                 data.hashId = uniqueIdForDataPoint(data);
-            
+
                 setPlotData(existingData => {
                     const existingItemIndex = existingData.findIndex(item => item.hashId === data.hashId);
-            
+
                     if (existingItemIndex !== -1) {
                         // Ignore the new data and keep existingData as is
                         return existingData;
@@ -276,11 +276,20 @@ function AHPRankSumCompUI({ siteName, bmpName, displaySetting = 'block', loaderG
                         onClick={(e) => {
                             setIsLoading(true);
                             fetch(`rawdata?sitename=${encodeURIComponent(siteName)}`)
-                                .then(response => {
+                                .then(async response => {
                                     if (!response.ok) {
-                                        // If the response status code is not in the 200-299 range
-                                        // Throw an error and catch it later in the chain
-                                        throw new Error('Network response was not ok');
+                                        try {
+                                            // Attempt to parse the JSON response
+                                            const err = await response.json();
+                                            // Log the detailed error message from the response
+                                            console.error('Error from server:', err.error, err.message);
+                                            // Throw a new error that includes the server's error message for further handling
+                                            throw new Error(`Error from server: ${err.error} - ${err.message}`);
+                                        } catch (parseError) {
+                                            // Handle cases where the error response is not JSON or cannot be parsed
+                                            console.error('Error parsing server response:', parseError);
+                                            throw new Error('An unexpected error occurred');
+                                        }
                                     }
                                     return response.blob();
                                 })
@@ -300,7 +309,7 @@ function AHPRankSumCompUI({ siteName, bmpName, displaySetting = 'block', loaderG
                                 })
                                 .catch(error => {
                                     // Log the error or display an alert/message to the user
-                                    console.error('There was a problem with the fetch operation:', error);
+                                    console.error('There was a problem with the fetch operation:', error.message);
                                     alert('Failed to download the data. Please try again.'); // Example of user notification
                                 })
                                 .finally(() => setIsLoading(false));
