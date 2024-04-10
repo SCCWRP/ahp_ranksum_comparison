@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Modal from 'react-modal';
 
 // Component imports
 import IndexComparisonChart from './components/IndexComparisonChart'
@@ -12,7 +13,7 @@ import useLocalStorage from './hooks/useLocalStorage';
 import './styles/generic.css'
 import '../node_modules/bootstrap/dist/css/bootstrap.min.css';
 
-function AHPRankSumCompUI({ siteName, bmpName, displaySetting = 'block' }) {
+function AHPRankSumCompUI({ siteName, bmpName, displaySetting = 'block', loaderGifRoute = 'loader' }) {
 
     // State management
     const [ahpColor, setAhpColor] = useState('#00FF00');
@@ -26,6 +27,8 @@ function AHPRankSumCompUI({ siteName, bmpName, displaySetting = 'block' }) {
     const [plotData, setPlotData] = useLocalStorage('bmpIndexComparisonPlotData', []);
 
     const [universalThreshPercentile, setUniversalThreshPercentile] = useState(0.25);
+
+    const [isLoading, setIsLoading] = useState(false);
 
 
     // Fetch Analytes when a BMP name is selected
@@ -250,7 +253,7 @@ function AHPRankSumCompUI({ siteName, bmpName, displaySetting = 'block' }) {
                         onClick={(e) => {
 
                             const currentSitePlotData = plotData.filter(i => ((i.sitename == siteName))).map(d => {
-                                return d.analytes.map(({isActive, ...rest}) => {
+                                return d.analytes.map(({ isActive, ...rest }) => {
                                     return {
                                         sitename: d.sitename,
                                         bmpname: d.bmpname,
@@ -267,7 +270,7 @@ function AHPRankSumCompUI({ siteName, bmpName, displaySetting = 'block' }) {
                                 })
                             }).flat()
 
-
+                            setIsLoading(true);
                             fetch('json-to-excel', {
                                 method: 'POST',
                                 headers: {
@@ -289,7 +292,8 @@ function AHPRankSumCompUI({ siteName, bmpName, displaySetting = 'block' }) {
 
                                     document.body.removeChild(a);
                                     window.URL.revokeObjectURL(fileUrl); // Clean up
-                                });
+                                })
+                                .finally(() => setIsLoading(false));
                         }}
                     >
                         Download Plot Data for {siteName}
@@ -304,7 +308,7 @@ function AHPRankSumCompUI({ siteName, bmpName, displaySetting = 'block' }) {
                         onClick={(e) => {
 
                             const allSitesPlotData = plotData.map(d => {
-                                return d.analytes.map(({isActive, ...rest}) => {
+                                return d.analytes.map(({ isActive, ...rest }) => {
                                     return {
                                         sitename: d.sitename,
                                         bmpname: d.bmpname,
@@ -321,6 +325,7 @@ function AHPRankSumCompUI({ siteName, bmpName, displaySetting = 'block' }) {
                                 })
                             }).flat()
 
+                            setIsLoading(true);
                             fetch('json-to-excel', {
                                 method: 'POST',
                                 headers: {
@@ -342,7 +347,8 @@ function AHPRankSumCompUI({ siteName, bmpName, displaySetting = 'block' }) {
 
                                     document.body.removeChild(a);
                                     window.URL.revokeObjectURL(fileUrl); // Clean up
-                                });
+                                })
+                                .finally(() => setIsLoading(false));
                         }}
                     >
                         Download Plot data for all sites
@@ -355,6 +361,31 @@ function AHPRankSumCompUI({ siteName, bmpName, displaySetting = 'block' }) {
             <div class="chart-label" style={{ textAlign: 'center', fontSize: '20px' }}>Ranksum vs AHP Comparison plot</div>
             <IndexComparisonChart plotData={plotData.filter((d) => ((d.sitename == siteName) & (d.bmpname == bmpName)))} ahpColor={ahpColor} ranksumColor={ranksumColor} />
         </div>
+
+        {/* Loader GIF Modal Window */}
+        <Modal
+            isOpen={isLoading}
+            style={{
+                content: {
+                    top: '50%',
+                    left: '50%',
+                    right: 'auto',
+                    bottom: 'auto',
+                    marginRight: '-50%',
+                    transform: 'translate(-50%, -50%)',
+                    border: 'none', // Optionally remove the border
+                    background: 'transparent', // Optionally make the background transparent
+                    overflow: 'hidden', // Hide overflow
+                },
+                overlay: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Semi-transparent overlay
+                },
+            }}
+            ariaHideApp={false} // Add this to avoid warning for apps not mounted on the root
+            contentLabel="Loading"
+        >
+            <img src={loaderGifRoute} alt="Loading..." height={250} width={250} />
+        </Modal>
     </div>)
 }
 

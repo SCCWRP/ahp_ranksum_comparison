@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import Modal from 'react-modal'
+import Modal from 'react-modal';
 
 // Component imports
 import IndexComparisonChart from './components/IndexComparisonChart'
@@ -305,7 +305,7 @@ function ThreshCompUI({ siteName, bmpName, displaySetting = 'block', loaderGifRo
                                 })
                             }).flat()
 
-
+                            setIsLoading(true);
                             fetch('json-to-excel', {
                                 method: 'POST',
                                 headers: {
@@ -327,7 +327,8 @@ function ThreshCompUI({ siteName, bmpName, displaySetting = 'block', loaderGifRo
 
                                     document.body.removeChild(a);
                                     window.URL.revokeObjectURL(fileUrl); // Clean up
-                                });
+                                })
+                                .finally(() => setIsLoading(false));
                         }}
                     >
                         Download Plot Data for {siteName}
@@ -363,6 +364,7 @@ function ThreshCompUI({ siteName, bmpName, displaySetting = 'block', loaderGifRo
                                 })
                             }).flat()
 
+                            setIsLoading(true);
                             fetch('json-to-excel', {
                                 method: 'POST',
                                 headers: {
@@ -384,7 +386,8 @@ function ThreshCompUI({ siteName, bmpName, displaySetting = 'block', loaderGifRo
 
                                     document.body.removeChild(a);
                                     window.URL.revokeObjectURL(fileUrl); // Clean up
-                                });
+                                })
+                                .finally(() => setIsLoading(false))
                         }}
                     >
                         Download Plot data for all sites
