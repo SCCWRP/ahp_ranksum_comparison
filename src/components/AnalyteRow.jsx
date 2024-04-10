@@ -161,7 +161,7 @@ function AnalyteRow({ siteName, bmpName, analytename , unit, rank, isEnabled, co
             <td>
                 <input type="number" className="form-control" value={rank}
                     onChange={(e) => {
-                        const newRank = Number(e.target.value) == 0 ? '' : Number(e.target.value); 
+                        const newRank = Number(e.target.value) < 1 ? '' : Number(e.target.value) ; 
 
 
                         setAnalytes(prev => {
@@ -253,7 +253,7 @@ export function SimpleAnalyteRow({analytename, unit, rank, isEnabled, consecutiv
             <td>
                 <input type="number" className="form-control" value={rank}
                     onChange={(e) => {
-                        const newRank = Number(e.target.value) == 0 ? '' : Number(e.target.value); 
+                        const newRank = Number(e.target.value) < 1 ? '' : Number(e.target.value) ; 
 
                         
                         setAnalytes(prev => {

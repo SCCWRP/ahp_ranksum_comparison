@@ -6,9 +6,10 @@ const AnalyteTable = ({ showAnalytes, analytes, siteName, bmpName, universalThre
     useEffect(()=>{
         // if "consecutiveAnalytes" is reset - reset order of active analytes
         if (consecutiveAnalytes) {
+            let counter = 1;
             setAnalytes(anlts => {
-                anlts.map((a, i) => {
-                    {}
+                return anlts.map((a, i) => {
+                    return a.isActive ? {...a, rank: counter++} : a
                 })
             })
         }
@@ -54,6 +55,20 @@ export default AnalyteTable;
 
 
 export const SimpleAnalyteTable = ({ showAnalytes, siteName, bmpName, analytes, consecutiveAnalytes, setAnalytes }) => {
+    
+    useEffect(()=>{
+        // if "consecutiveAnalytes" is reset - reset order of active analytes
+        if (consecutiveAnalytes) {
+            let counter = 1;
+            setAnalytes(anlts => {
+                return anlts.map((a, i) => {
+                    return a.isActive ? {...a, rank: counter++} : a
+                })
+            })
+        }
+
+    }, [consecutiveAnalytes])
+
     
     return (
         <div className="table-responsive" style={{ display: showAnalytes ? 'block' : 'none' }}>

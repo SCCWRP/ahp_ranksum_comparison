@@ -54,7 +54,17 @@ function AHPRankSumCompUI({siteName, bmpName, displaySetting = 'block' }) {
                 alert("Ranking values must be integers");
                 return;
         }
-        
+
+        // ranking must be positive integers
+        if (
+            !activeAnalytes.map((a) => {
+                return a.rank;
+            }).every(val => val > 0)
+        ) {
+                alert("Ranking values must be integers > 0");
+                return;
+        }
+
 
         if (activeAnalytes.length < 2) {
             alert("Mashup score cannot be calculated with less than 2 parameters")
@@ -215,7 +225,7 @@ function AHPRankSumCompUI({siteName, bmpName, displaySetting = 'block' }) {
                         onChange={(e) => setConsecutiveAnalytes(e.target.checked)}
                     />
                     <label className="form-check-label" htmlFor="maintain-consecutive-thresh-analytes">
-                        Maintain Strict Consecutive Order for Analyte Ranking
+                        Maintain Consecutive Order for Analyte Ranking
                     </label>
                 </div>
             </div>

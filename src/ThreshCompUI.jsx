@@ -82,12 +82,20 @@ function ThreshCompUI({ siteName, bmpName, displaySetting = 'block', loaderGifRo
         // ranking must be integers
         if (
             !activeAnalytes.map((a) => {
-                console.log('a.rank');
-                console.log(a.rank);
                 return a.rank;
             }).every(val => typeof val === 'number')
         ) {
                 alert("Ranking values must be integers");
+                return;
+        }
+        
+        // ranking must be positive integers
+        if (
+            !activeAnalytes.map((a) => {
+                return a.rank;
+            }).every(val => val > 0)
+        ) {
+                alert("Ranking values must be integers > 0");
                 return;
         }
 
@@ -250,7 +258,7 @@ function ThreshCompUI({ siteName, bmpName, displaySetting = 'block', loaderGifRo
                         onChange={(e) => setConsecutiveAnalytes(e.target.checked)}
                     />
                     <label className="form-check-label" htmlFor="maintain-consecutive-thresh-analytes">
-                        Maintain Strict Consecutive Order for Analyte Ranking
+                        Maintain Consecutive Order for Analyte Ranking
                     </label>
                 </div>
             </div>
