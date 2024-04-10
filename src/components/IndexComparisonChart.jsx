@@ -154,22 +154,30 @@ const IndexComparisonChart = ({
             };
 
             const setModalData = (event, d) => {
-
-                const scoreType = String(event.target.className.baseVal).replace('dot-', '');
-
-                const summaryData = {
-                    [`${scoreType === 'ahp' ? 'AHP' : 'Ranksum'} Mashup Score`]  : d[`${scoreType}_mashup_score`]
-                }
-
-                setSelectedModalData(
-                    {
-                        summaryData: summaryData,
-                        detailedData: d.analytes.sort((a, b) => a.rank - b.rank).map(({ isActive, ...keepAttrs }) => keepAttrs) // using destructuring
-                    }
-                );
+                const scoreType = event.target.getAttribute("class").replace("dot-", "");
+                const clickX = x(d.n_params);
+                const clickY = y(d[`${scoreType}_mashup_score`]);
+                const threshold = 10; // Define a threshold for considering dots "close"
+            
+                // Find overlapping dots based on the threshold
+                const overlappingData = plotData.filter(data => {
+                    const dataX = x(data.n_params);
+                    const dataY = y(data[`${scoreType}_mashup_score`]);
+                    return Math.sqrt(Math.pow(dataX - clickX, 2) + Math.pow(dataY - clickY, 2)) < threshold;
+                });
+            
+                // Map the overlapping data to the expected format for the modal
+                const paginatedModalData = overlappingData.map(data => ({
+                    summaryData: {
+                        [`${scoreType.toUpperCase()} Mashup Score`]: data[`${scoreType}_mashup_score`],
+                    },
+                    detailedData: data.analytes.sort((a, b) => a.rank - b.rank).map(({ isActive, ...keepAttrs }) => keepAttrs)
+                }));
+            
+                setSelectedModalData(paginatedModalData);
                 setIsModalOpen(true);
-
-            }
+            };
+            
 
 
 

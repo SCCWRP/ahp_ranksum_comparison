@@ -166,20 +166,29 @@ const ThreshComparisonChart = ({
                 .on("mouseover", showTooltip)
                 .on("mouseout", hideTooltip)
                 .on("click", (event, d) => {
-                    const analyteDetails = d.analytes;
+                    
+                    // Determine the position of the click event
+                    const clickX = x(d.n_params);
+                    const clickY = y(d[scoreProperty]);
+                    const threshold = 10; // Adjust based on your scale
 
-                    const summaryData = {
-                        "Threshold Percentile" : d.thresh_percentile,
-                        [`${scoreProperty.replace('_mashup_score','') == 'ahp' ? 'AHP' : 'Ranksum'} Mashup Score`] : d[scoreProperty]
-                    }
+                    // Filter plotData to find dots within the threshold
+                    const overlappingData = plotData.filter(data => {
+                        const dataX = x(data.n_params);
+                        const dataY = y(data[scoreProperty]);
+                        return Math.sqrt((dataX - clickX) ** 2 + (dataY - clickY) ** 2) < threshold;
+                    });
 
-                    setSelectedModalData(
-                        {
-                            summaryData: summaryData,
-                            detailedData: analyteDetails.sort((a,b) => a.rank - b.rank)
-                        }
-                    );
+                    // For each set of overlapping data, prepare modal data
+                    const paginatedModalData = overlappingData.map(data => ({
+                        summaryData: {
+                            "Threshold Percentile": data.thresh_percentile,
+                            [`${scoreProperty.replace('_mashup_score', '') == 'ahp' ? 'AHP' : 'Ranksum'} Mashup Score`]: data[scoreProperty]
+                        },
+                        detailedData: data.analytes.sort((a, b) => a.rank - b.rank)
+                    }));
 
+                    setSelectedModalData(paginatedModalData);
                     setIsModalOpen(true);
                 });
         }
