@@ -159,25 +159,57 @@ const IndexComparisonChart = ({
                 const clickX = x(d.n_params);
                 const clickY = y(d[`${scoreType}_mashup_score`]);
                 const threshold = 10; // Define a threshold for considering dots "close"
-
-                // Find overlapping dots based on the threshold
-                const overlappingData = plotData.filter(data => {
+            
+                // Find overlapping dots for both ahp and ranksum scores
+                const overlappingData = plotData.flatMap(data => {
                     const dataX = x(data.n_params);
-                    const dataY = y(data[`${scoreType}_mashup_score`]);
-                    return Math.sqrt(Math.pow(dataX - clickX, 2) + Math.pow(dataY - clickY, 2)) < threshold;
+                    const overlaps = [];
+                    const ahpDistance = Math.sqrt(Math.pow(dataX - clickX, 2) + Math.pow(y(data.ahp_mashup_score) - clickY, 2));
+                    const ranksumDistance = Math.sqrt(Math.pow(dataX - clickX, 2) + Math.pow(y(data.ranksum_mashup_score) - clickY, 2));
+            
+                    if (ahpDistance < threshold) {
+                        overlaps.push({
+                            ...data,
+                            scoreType: 'ahp',
+                            score: data.ahp_mashup_score
+                        });
+                    }
+            
+                    if (ranksumDistance < threshold) {
+                        overlaps.push({
+                            ...data,
+                            scoreType: 'ranksum',
+                            score: data.ranksum_mashup_score
+                        });
+                    }
+            
+                    return overlaps;
                 });
-
-                // Map the overlapping data to the expected format for the modal
+            
+                // Map the overlapping data to the expected format for the modal, considering both score types
                 const paginatedModalData = overlappingData.map(data => ({
                     summaryData: {
-                        [`${scoreType.toUpperCase()} Mashup Score`]: data[`${scoreType}_mashup_score`],
+                        [`${data.scoreType.toUpperCase()} Mashup Score`]: data.score,
                     },
-                    detailedData: data.analytes.sort((a, b) => a.rank - b.rank).map(({ isActive, ...keepAttrs }) => keepAttrs)
+                    detailedData: data.analytes.sort((a, b) => a.rank - b.rank).map(
+                        ({ isActive, ...rest }) =>  {
+                            return {
+                                analytename: rest.analytename,
+                                individual_score: rest.individual_score,
+                                number_of_events: rest.number_of_events,
+                                rank: rest.rank,
+                                [`${data.scoreType}_weight`]: rest[`${data.scoreType}_weight`],
+                                threshold_value: rest.threshold_value,
+                                unit: rest.unit,
+                                [`(${data.scoreType === 'ahp' ? 'ranksum' : 'ahp'}_weight)`]: rest[`${data.scoreType === 'ahp' ? 'ranksum' : 'ahp'}_weight`]
+                            }
+                        })
                 }));
-
+            
                 setSelectedModalData(paginatedModalData);
                 setIsModalOpen(true);
             };
+            
 
 
             svg.selectAll(".dot-ahp")

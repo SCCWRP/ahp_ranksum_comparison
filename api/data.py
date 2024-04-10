@@ -596,7 +596,7 @@ def directcomparison():
     wqindexdf['rank'] = wqindexdf.analyte.apply(lambda a: rankings_dict.get(a))
     
     # AHP needs the constituents and the rankings for each (numpy arrays)
-    wqindexdf['ahp_weights'] = calc_ahp_weights(wqindexdf.analyte.values, wqindexdf['rank'].values)
+    wqindexdf['ahp_weights'] = calc_ahp_weights(wqindexdf.sort_values(['rank']).analyte.values, wqindexdf.sort_values(['rank'])['rank'].values)
 
     # Ranksum just needs the rankings (numpy array)
     wqindexdf['ranksum_weights'] = calc_ranksum_weights(wqindexdf['rank'].values)

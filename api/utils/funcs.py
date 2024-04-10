@@ -49,6 +49,9 @@ def calc_ahp_weights(constituents, rankings):
 
     return ahp_weights
 
+
+
+
 def mashup_index(scores, weights):
     # "scores" represents a list (or array) of scores (separate scores per constituent)
     # weights represents the AHP or Ranksum weights list (or array)
