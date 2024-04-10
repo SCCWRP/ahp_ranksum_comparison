@@ -78,7 +78,7 @@ function AHPRankSumCompUI({siteName, bmpName, displaySetting = 'block' }) {
             if (!confirmed) return;
         }
 
-        fetch('getdata', {
+        fetch('direct-comparison-data', {
             method: 'post',
             headers: {
                 'Content-Type': 'application/json'

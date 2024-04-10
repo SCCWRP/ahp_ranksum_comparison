@@ -456,8 +456,8 @@ def percentilevals():
     
     
 # Actually get the data (This route is for water quality - if they request for hydrology we can build that later - too much time to put in to build that right now)
-@dataapi.route('/getdata', methods = ['GET', 'POST'])
-def getdata():
+@dataapi.route('/direct-comparison-data', methods = ['GET', 'POST'])
+def directcomparison():
     eng = g.eng
     
     params = request.json
