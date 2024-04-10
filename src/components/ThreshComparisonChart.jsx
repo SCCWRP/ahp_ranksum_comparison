@@ -140,7 +140,7 @@ const ThreshComparisonChart = ({
             // Tooltip show function
             const showTooltip = (event, d) => {
                 tooltip.style("opacity", 1)
-                    .html(`Score: ${d[scoreProperty]}<br>Threshold Percentile: ${d.thresh_percentile}`)
+                    .html(`Score: ${d[scoreProperty]}<br>Threshold Percentile: ${d.thresh_percentile}<br>(Click for details)`)
                     .style("left", (event.pageX + 10) + "px")
                     .style("top", (event.pageY + 10) + "px")
                     .style("display", "block");

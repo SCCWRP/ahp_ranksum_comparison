@@ -18,6 +18,7 @@ function ThreshSelector({ index, threshVals, setThreshVals }) {
     const colorPickerId = `thresh-color-picker-${randomId}`;
     const hexColorValue = createRandomHexCode();
 
+
     useEffect(() => {
         setThreshVals(
             prev => prev.map(
@@ -28,8 +29,9 @@ function ThreshSelector({ index, threshVals, setThreshVals }) {
         )
     }, [colorVar])
 
+
     useEffect(() => {
-        
+
         setThreshVals(
             prev => prev.map(
                 (v, i) => {
@@ -54,10 +56,10 @@ function ThreshSelector({ index, threshVals, setThreshVals }) {
                 onChange={(e) => setThreshPercentile(e.target.value)}
             />
             <ColorPicker
-                label="Select a color" 
-                name={`color-picker-${randomId}`} 
-                id={colorPickerId} 
-                color={colorVar} 
+                label="Select a color"
+                name={`color-picker-${randomId}`}
+                id={colorPickerId}
+                color={colorVar}
                 onChange={(e) => setColorVar(e.target.value)} />
         </div>
     )

@@ -142,7 +142,7 @@ const IndexComparisonChart = ({
             const showTooltip = (event, d) => {
                 const scoreType = String(event.target.className.baseVal).replace('dot-', '')
                 tooltip.style("opacity", 1)
-                    .html(`${scoreType === 'ahp' ? 'AHP' : 'Ranksum'} Score: ${d[`${scoreType}_mashup_score`]}`)
+                    .html(`${scoreType === 'ahp' ? 'AHP' : 'Ranksum'} Score: ${d[`${scoreType}_mashup_score`]}<br>(Click for details)`)
                     .style("left", (event.pageX + 10) + "px")
                     .style("top", (event.pageY + 10) + "px")
                     .style("display", "block");

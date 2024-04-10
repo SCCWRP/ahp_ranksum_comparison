@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useReducer } from 'react';
 import Modal from 'react-modal';
 
 // Component imports
-import IndexComparisonChart from './components/IndexComparisonChart'
 import { SimpleAnalyteTable } from './components/AnalyteTable';
-import ThreshSelector from './components/ThreshSelector';
 import ThreshComparisonChart from './components/ThreshComparisonChart';
+import ThreshSelectorRow from './components/ThreshSelectorRow';
+import uniqueIdForDataPoint from './utils/hash';
 
 // Custom Hooks
 import useLocalStorage from './hooks/useLocalStorage';
@@ -14,39 +14,37 @@ import useLocalStorage from './hooks/useLocalStorage';
 // Styles
 import './styles/generic.css'
 import '../node_modules/bootstrap/dist/css/bootstrap.min.css';
-import uniqueIdForDataPoint from './utils/hash';
 
 function ThreshCompUI({ siteName, bmpName, displaySetting = 'block', loaderGifRoute = 'loader' }) {
 
+    // What the threshold colors and values will be stored in localStorage with
     const THRESHOLD_VALUE_LOCALSTORAGE_KEY = "threshCompPercentilesAndPlotColors";
+    const DEFAULT_THRESHOLD_VALUES = [
+        {
+            percentile: 0.1,
+            plotcolor: "#1705e3"
+        },
+        {
+            percentile: 0.25,
+            plotcolor: "#0595e3"
+        },
+        {
+            percentile: 0.5,
+            plotcolor: "#05e374"
+        },
+        {
+            percentile: 0.75,
+            plotcolor: "#34ad34"
+        },
+        {
+            percentile: 0.9,
+            plotcolor: "#9934ad"
+        }
+    ]
 
     // State management
-
-    // const [threshVals, setThreshVals] = useState(
-    const [threshVals, setThreshVals] = useLocalStorage(THRESHOLD_VALUE_LOCALSTORAGE_KEY,
-        [
-            {
-                percentile: 0.1,
-                plotcolor: "#1705e3"
-            },
-            {
-                percentile: 0.25,
-                plotcolor: "#0595e3"
-            },
-            {
-                percentile: 0.5,
-                plotcolor: "#05e374"
-            },
-            {
-                percentile: 0.75,
-                plotcolor: "#34ad34"
-            },
-            {
-                percentile: 0.9,
-                plotcolor: "#9934ad"
-            }
-        ]
-    )
+    const [threshVals, setThreshVals] = useState(DEFAULT_THRESHOLD_VALUES)
+    const [threshRowKey, setThreshRowKey] = useState(0);
 
     const [showAnalytes, setShowAnalytes] = useState(true);
     const [consecutiveAnalytes, setConsecutiveAnalytes] = useState(true);
@@ -54,9 +52,10 @@ function ThreshCompUI({ siteName, bmpName, displaySetting = 'block', loaderGifRo
 
     const [plotData, setPlotData] = useLocalStorage('bmpThreshComparisonPlotData', []);
 
-
-
+    // for the Modal
     const [isLoading, setIsLoading] = useState(false);
+
+
     // Preload the loading image when the component mounts
     useEffect(() => {
         const img = new Image();
@@ -76,6 +75,7 @@ function ThreshCompUI({ siteName, bmpName, displaySetting = 'block', loaderGifRo
     }, [siteName, bmpName]);
 
 
+    // The main function that runs when the user clicks "add data to plots"
     function updatePlotData() {
 
         const activeAnalytes = analytes.filter(a => a.isActive);
@@ -100,7 +100,7 @@ function ThreshCompUI({ siteName, bmpName, displaySetting = 'block', loaderGifRo
             return;
         }
 
-
+        // other various warnings
         if (activeAnalytes.length < 2) {
             alert("Mashup score cannot be calculated with less than 2 parameters")
             return;
@@ -118,7 +118,10 @@ function ThreshCompUI({ siteName, bmpName, displaySetting = 'block', loaderGifRo
             if (!confirmed) return;
         }
 
+        // show the Modal
         setIsLoading(true);
+
+        // Make the fetch call
         fetch('thresh-comparison-data', { // the threshcomparison route is to be created later
             method: 'post',
             headers: {
@@ -142,6 +145,8 @@ function ThreshCompUI({ siteName, bmpName, displaySetting = 'block', loaderGifRo
                 return response.json();
             })
             .then(data => {
+                // Prevent overlapping dots
+                
                 // First, assign a hashId to each data object in the array
                 const newData = data.map(d => ({
                     ...d,
@@ -181,17 +186,9 @@ function ThreshCompUI({ siteName, bmpName, displaySetting = 'block', loaderGifRo
 
 
     return (<div className="container my-1" style={{ display: displaySetting }}>
-        <div class="row mb-5">
-            {
-                threshVals.map((v, i) => {
-                    return (
-                        <div key={i} className="col-md-2">
-                            <ThreshSelector index={i} threshVals={threshVals} setThreshVals={setThreshVals} />
-                        </div>
-                    )
-                })
-            }
-        </div>
+        
+        {/* Thresh Row Key forces a refresh/re-render so that the thresh values will update as expected */}
+        <ThreshSelectorRow key={threshRowKey} threshVals={threshVals} setThreshVals={setThreshVals}/>
 
         <div class="row mb-4 d-flex align-items-end">
 
@@ -215,6 +212,8 @@ function ThreshCompUI({ siteName, bmpName, displaySetting = 'block', loaderGifRo
                             const confirmed = confirm(`Are you sure you want to revert plot colors and thresholds to default?`)
                             if (!confirmed) return;
                             window.localStorage.removeItem(THRESHOLD_VALUE_LOCALSTORAGE_KEY);
+                            setThreshVals([...DEFAULT_THRESHOLD_VALUES]);
+                            setThreshRowKey(c => c + 1)
                         }}
                     >
                         Reset Threshold Values
