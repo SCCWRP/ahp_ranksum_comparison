@@ -8,6 +8,7 @@ from datetime import timedelta
 from .main import homepage
 from .dataapi import dataapi
 from .imgserver import imgserver
+from .download import download
 
 
 
@@ -60,3 +61,4 @@ def teardown_request(exception):
 app.register_blueprint(homepage)
 app.register_blueprint(dataapi)
 app.register_blueprint(imgserver)
+app.register_blueprint(download)

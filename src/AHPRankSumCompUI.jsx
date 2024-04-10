@@ -12,7 +12,7 @@ import useLocalStorage from './hooks/useLocalStorage';
 import './styles/generic.css'
 import '../node_modules/bootstrap/dist/css/bootstrap.min.css';
 
-function AHPRankSumCompUI({siteName, bmpName, displaySetting = 'block' }) {
+function AHPRankSumCompUI({ siteName, bmpName, displaySetting = 'block' }) {
 
     // State management
     const [ahpColor, setAhpColor] = useState('#00FF00');
@@ -21,8 +21,8 @@ function AHPRankSumCompUI({siteName, bmpName, displaySetting = 'block' }) {
     const [showAnalytes, setShowAnalytes] = useState(true);
     const [consecutiveAnalytes, setConsecutiveAnalytes] = useState(true);
     const [analytes, setAnalytes] = useState([]);
-    
-    
+
+
     const [plotData, setPlotData] = useLocalStorage('bmpIndexComparisonPlotData', []);
 
     const [universalThreshPercentile, setUniversalThreshPercentile] = useState(0.25);
@@ -34,7 +34,7 @@ function AHPRankSumCompUI({siteName, bmpName, displaySetting = 'block' }) {
         fetch(`analytes?sitename=${encodeURIComponent(siteName)}&bmpname=${encodeURIComponent(bmpName)}`) // Your API endpoint for fetching analytes
             .then((response) => response.json())
             .then((data) => {
-                setAnalytes((a) => data.analytes.map((a, i) => {return {...a, isActive: true, rank: i + 1}}));
+                setAnalytes((a) => data.analytes.map((a, i) => { return { ...a, isActive: true, rank: i + 1 } }));
             });
     }, [siteName, bmpName]);
 
@@ -51,8 +51,8 @@ function AHPRankSumCompUI({siteName, bmpName, displaySetting = 'block' }) {
                 return a.rank;
             }).every(val => typeof val === 'number')
         ) {
-                alert("Ranking values must be integers");
-                return;
+            alert("Ranking values must be integers");
+            return;
         }
 
         // ranking must be positive integers
@@ -61,8 +61,8 @@ function AHPRankSumCompUI({siteName, bmpName, displaySetting = 'block' }) {
                 return a.rank;
             }).every(val => val > 0)
         ) {
-                alert("Ranking values must be integers > 0");
-                return;
+            alert("Ranking values must be integers > 0");
+            return;
         }
 
 
@@ -116,7 +116,7 @@ function AHPRankSumCompUI({siteName, bmpName, displaySetting = 'block' }) {
     }
 
 
-    return (<div className="container my-1" style={{display: displaySetting}}>
+    return (<div className="container my-1" style={{ display: displaySetting }}>
         <div class="row mb-5">
             {/* Assume ColorPicker supports Bootstrap styling; otherwise, adapt it */}
             <div className="col-md-4">
@@ -155,7 +155,6 @@ function AHPRankSumCompUI({siteName, bmpName, displaySetting = 'block' }) {
                     value={universalThreshPercentile}
                     onChange={(e) => setUniversalThreshPercentile(Number(e.target.value))}
                 />
-
             </div>
             <div className="col-3 form-check d-flex flex-column">
                 <div className="mt-auto">
@@ -242,6 +241,60 @@ function AHPRankSumCompUI({siteName, bmpName, displaySetting = 'block' }) {
             setAnalytes={setAnalytes}
         />
 
+        <div class="row my-5 d-flex align-items-end">
+            <div className="col-6 form-check d-flex flex-column">
+                <div className="mt-auto">
+                    <button
+                        id="download-current-data-btn"
+                        className="btn btn-primary"
+                        onClick={(e) => {
+                            console.log(`Plot Data for ${siteName}`)
+                            const currentSitePlotData = plotData.filter(i => ((i.sitename == siteName) )).map(d => {
+                                return d.analytes.map(a => {
+                                    return {
+                                        ...a,
+                                        sitename: d.sitename,
+                                        bmpname: d.bmpname,
+                                        n_params: d.n_params,
+                                        ahp_mashup_score: d.ahp_mashup_score,
+                                        ranksum_mashup_score: d.ranksum_mashup_score
+                                    }
+                                })
+                            }).flat()
+                            console.log(currentSitePlotData)
+                        }}
+                    >
+                        Download Plot Data for {siteName}
+                    </button>
+                </div>
+            </div>
+            <div className="col-6 form-check d-flex flex-column">
+                <div className="mt-auto">
+                    <button
+                        id="download-all-data-btn"
+                        className="btn btn-primary"
+                        onClick={(e) => {
+                            console.log(`Plot Data for all sites`)
+                            const allSitesPlotData = plotData.map(d => {
+                                return d.analytes.map(a => {
+                                    return {
+                                        ...a,
+                                        sitename: d.sitename,
+                                        bmpname: d.bmpname,
+                                        n_params: d.n_params,
+                                        ahp_mashup_score: d.ahp_mashup_score,
+                                        ranksum_mashup_score: d.ranksum_mashup_score
+                                    }
+                                })
+                            }).flat()
+                            console.log(allSitesPlotData)
+                        }}
+                    >
+                        Download Plot data for all sites
+                    </button>
+                </div>
+            </div>
+        </div>
 
         <div id="index-comparison-chart" className="mt-5">
             <div class="chart-label" style={{ textAlign: 'center', fontSize: '20px' }}>Ranksum vs AHP Comparison plot</div>
