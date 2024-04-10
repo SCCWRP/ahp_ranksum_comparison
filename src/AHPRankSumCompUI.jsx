@@ -330,7 +330,14 @@ function AHPRankSumCompUI({ siteName, bmpName, displaySetting = 'block', loaderG
                                 },
                                 body: JSON.stringify(currentSitePlotData)
                             })
-                                .then(response => response.blob())
+                                .then(response => {
+                                    // First, check if the response is ok (status in the range 200-299)
+                                    if (!response.ok) {
+                                        // If the response is not ok, throw an error
+                                        throw new Error(`HTTP error! Status: ${response.status}`);
+                                    }
+                                    return response.blob(); // Proceed to process the response as a blob if it is ok
+                                })
                                 .then(blob => {
                                     // Create a new object URL for the blob
                                     const fileUrl = window.URL.createObjectURL(blob);
@@ -345,7 +352,16 @@ function AHPRankSumCompUI({ siteName, bmpName, displaySetting = 'block', loaderG
                                     document.body.removeChild(a);
                                     window.URL.revokeObjectURL(fileUrl); // Clean up
                                 })
-                                .finally(() => setIsLoading(false));
+                                .catch(error => {
+                                    // Handle any errors that occurred during the fetch or while processing the response
+                                    console.error('Fetch error:', error.message);
+                                    alert('An error occurred while downloading the file. Please try again.'); // Notify the user
+                                })
+                                .finally(() => {
+                                    // This will run regardless of the previous operations succeeding or failing
+                                    setIsLoading(false);
+                                });
+
                         }}
                     >
                         Download Plot Data for {siteName}
@@ -385,7 +401,14 @@ function AHPRankSumCompUI({ siteName, bmpName, displaySetting = 'block', loaderG
                                 },
                                 body: JSON.stringify(allSitesPlotData)
                             })
-                                .then(response => response.blob())
+                                .then(response => {
+                                    // First, check if the response is ok (status in the range 200-299)
+                                    if (!response.ok) {
+                                        // If the response is not ok, throw an error
+                                        throw new Error(`HTTP error! Status: ${response.status}`);
+                                    }
+                                    return response.blob(); // Proceed to process the response as a blob if it is ok
+                                })
                                 .then(blob => {
                                     // Create a new object URL for the blob
                                     const fileUrl = window.URL.createObjectURL(blob);
@@ -399,6 +422,11 @@ function AHPRankSumCompUI({ siteName, bmpName, displaySetting = 'block', loaderG
 
                                     document.body.removeChild(a);
                                     window.URL.revokeObjectURL(fileUrl); // Clean up
+                                })
+                                .catch(error => {
+                                    // Handle any errors that occurred during the fetch or while processing the response
+                                    console.error('Fetch error:', error.message);
+                                    alert('An error occurred while downloading the file. Please try again.'); // Notify the user
                                 })
                                 .finally(() => {
                                     setIsLoading(false);

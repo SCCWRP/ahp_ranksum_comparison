@@ -238,7 +238,7 @@ function ThreshCompUI({ siteName, bmpName, displaySetting = 'block', loaderGifRo
                     </div>
                 </div>
             }
-            
+
         </div>
 
         <div class="row mt-5 mb-3">
@@ -364,22 +364,36 @@ function ThreshCompUI({ siteName, bmpName, displaySetting = 'block', loaderGifRo
                                 },
                                 body: JSON.stringify(currentSitePlotData)
                             })
-                                .then(response => response.blob())
+                                .then(response => {
+                                    // First, check if the response is ok (status in the range 200-299)
+                                    if (!response.ok) {
+                                        // If response is not ok, we throw an error that includes the status
+                                        throw new Error(`HTTP error! status: ${response.status}`);
+                                    }
+                                    // If the response is ok, proceed to process the blob
+                                    return response.blob();
+                                })
                                 .then(blob => {
-                                    // Create a new object URL for the blob
+                                    // Process the blob here
                                     const fileUrl = window.URL.createObjectURL(blob);
-
-                                    // Create a new anchor element and trigger a download
                                     const a = document.createElement('a');
                                     a.href = fileUrl;
-                                    a.download = `${siteName} Threshold Comparison Plot Data.xlsx`; // Name of the downloaded file
+                                    a.download = `${siteName} Threshold Comparison Plot Data.xlsx`;
                                     document.body.appendChild(a);
                                     a.click();
-
                                     document.body.removeChild(a);
-                                    window.URL.revokeObjectURL(fileUrl); // Clean up
+                                    window.URL.revokeObjectURL(fileUrl);
                                 })
-                                .finally(() => setIsLoading(false));
+                                .catch(error => {
+                                    // Handle any errors that occurred during the fetch or processing
+                                    console.error('Fetch error:', error.message);
+                                    alert('An error occurred while downloading the file. Please try again.'); // Notify the user of the error in an appropriate way for your application
+                                })
+                                .finally(() => {
+                                    // This will always run, regardless of whether the fetch was successful or not
+                                    setIsLoading(false);
+                                });
+
                         }}
                     >
                         Download Plot Data for {siteName}
@@ -423,7 +437,12 @@ function ThreshCompUI({ siteName, bmpName, displaySetting = 'block', loaderGifRo
                                 },
                                 body: JSON.stringify(allSitesPlotData)
                             })
-                                .then(response => response.blob())
+                                .then(response => {
+                                    if (!response.ok) {
+                                        throw new Error("Network response was not ok")
+                                    }
+                                    return response.blob();
+                                })
                                 .then(blob => {
                                     // Create a new object URL for the blob
                                     const fileUrl = window.URL.createObjectURL(blob);
@@ -437,6 +456,10 @@ function ThreshCompUI({ siteName, bmpName, displaySetting = 'block', loaderGifRo
 
                                     document.body.removeChild(a);
                                     window.URL.revokeObjectURL(fileUrl); // Clean up
+                                })
+                                .catch(error => {
+                                    console.log("Error fetching Thresh all site comparison data", error);
+                                    alert("Data did not download successfully - please try again")
                                 })
                                 .finally(() => setIsLoading(false))
                         }}
