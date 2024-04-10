@@ -115,6 +115,8 @@ function AHPRankSumCompUI({ siteName, bmpName, displaySetting = 'block', loaderG
                     // For unexpected errors (e.g., network errors), log the whole error
                     console.error('Unexpected error:', error);
                 }
+            }).finally(() => {
+                document.getElementById('index-comparison-chart').scrollIntoView();
             });
     }
 
@@ -170,36 +172,43 @@ function AHPRankSumCompUI({ siteName, bmpName, displaySetting = 'block', loaderG
                     </button>
                 </div>
             </div>
-            <div className="col-3 form-check d-flex flex-column">
-                <div className="mt-auto">
-                    <button
-                        id="delete-current-data-btn"
-                        className="btn btn-primary"
-                        onClick={(e) => {
-                            const confirmed = confirm(`Are you sure you want to clear existing data for site ${siteName} and BMP ${bmpName} ?`)
-                            if (!confirmed) return;
-                            setPlotData((d) => d.filter(i => ((i.sitename != siteName) & (i.bmpname != bmpName))))
-                        }}
-                    >
-                        Clear Plot Data for current site
-                    </button>
+            {plotData.filter(d => d.sitename == siteName).length > 0 &&
+
+                <div className="col-3 form-check d-flex flex-column">
+                    <div className="mt-auto">
+                        <button
+                            id="delete-current-data-btn"
+                            className="btn btn-primary"
+                            onClick={(e) => {
+                                const confirmed = confirm(`Are you sure you want to clear existing data for site ${siteName} and BMP ${bmpName} ?`)
+                                if (!confirmed) return;
+                                setPlotData((d) => d.filter(i => ((i.sitename != siteName) & (i.bmpname != bmpName))))
+                            }}
+                        >
+                            Clear Plot Data for current site
+                        </button>
+                    </div>
                 </div>
-            </div>
-            <div className="col-3 form-check d-flex flex-column">
-                <div className="mt-auto">
-                    <button
-                        id="delete-all-data-btn"
-                        className="btn btn-primary"
-                        onClick={(e) => {
-                            const confirmed = confirm(`Are you sure you want to clear existing data for all sites?`)
-                            if (!confirmed) return;
-                            setPlotData([])
-                        }}
-                    >
-                        Clear Plot data for all sites
-                    </button>
+            }
+            {plotData.length > 0 &&
+
+                <div className="col-3 form-check d-flex flex-column">
+                    <div className="mt-auto">
+                        <button
+                            id="delete-all-data-btn"
+                            className="btn btn-primary"
+                            onClick={(e) => {
+                                const confirmed = confirm(`Are you sure you want to clear existing data for all sites?`)
+                                if (!confirmed) return;
+                                setPlotData([])
+                            }}
+                        >
+                            Clear Plot data for all sites
+                        </button>
+                    </div>
                 </div>
-            </div>
+
+            }
         </div>
 
         <div class="row mt-5 mb-3">
@@ -245,7 +254,7 @@ function AHPRankSumCompUI({ siteName, bmpName, displaySetting = 'block', loaderG
         />
 
         <div class="row my-5 d-flex align-items-end">
-        <div className="col-4 form-check d-flex flex-column">
+            <div className="col-4 form-check d-flex flex-column">
                 <div className="mt-auto">
                     <button
                         id="download-current-data-btn"
@@ -264,14 +273,14 @@ function AHPRankSumCompUI({ siteName, bmpName, displaySetting = 'block', loaderG
                                 .then(blob => {
                                     // Create a new object URL for the blob
                                     const fileUrl = window.URL.createObjectURL(blob);
-                        
+
                                     // Create a new anchor element and trigger a download
                                     const a = document.createElement('a');
                                     a.href = fileUrl;
                                     a.download = `${siteName} Raw Data.xlsx`; // Name of the downloaded file
                                     document.body.appendChild(a);
                                     a.click();
-                        
+
                                     document.body.removeChild(a);
                                     window.URL.revokeObjectURL(fileUrl); // Clean up
                                 })
@@ -282,7 +291,7 @@ function AHPRankSumCompUI({ siteName, bmpName, displaySetting = 'block', loaderG
                                 })
                                 .finally(() => setIsLoading(false));
                         }}
-                        
+
                     >
                         Download Raw Data for {siteName}
                     </button>
@@ -391,7 +400,9 @@ function AHPRankSumCompUI({ siteName, bmpName, displaySetting = 'block', loaderG
                                     document.body.removeChild(a);
                                     window.URL.revokeObjectURL(fileUrl); // Clean up
                                 })
-                                .finally(() => setIsLoading(false));
+                                .finally(() => {
+                                    setIsLoading(false);
+                                });
                         }}
                     >
                         Download Plot data for all sites
