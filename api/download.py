@@ -33,7 +33,6 @@ def rawdata():
     eng = g.eng
     
     sitename = request.args.get('sitename')
-    
 
     # Sitename and firstbmp are required
     if sitename is None:

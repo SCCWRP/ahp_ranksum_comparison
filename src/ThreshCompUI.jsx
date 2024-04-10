@@ -147,14 +147,14 @@ function ThreshCompUI({ siteName, bmpName, displaySetting = 'block', loaderGifRo
                     ...d,
                     hashId: uniqueIdForDataPoint(d)
                 }));
-            
+
                 setPlotData(existingData => {
                     let existingDataClone = [...existingData];
 
                     newData.forEach(d => {
 
                         const existingItemIndex = existingData.findIndex(item => item.hashId === d.hashId);
-                        
+
                         if (existingItemIndex === -1) {
                             // If no item with the same hashId exists, add the new data object to the array
                             existingDataClone = [...existingDataClone, d];
@@ -163,15 +163,11 @@ function ThreshCompUI({ siteName, bmpName, displaySetting = 'block', loaderGifRo
 
                     return existingDataClone;
                 });
-            })            
+            })
             .catch(error => {
                 // Check if it's an expected error structure
                 if (error.status && error.message) {
                     console.error(`Fetch error (${error.status}): ${error.message}`);
-                    // If 'error.error' or similar contains additional info, log it as well
-                    if (error.error) {
-                        console.error(`Error details: ${error.error}`);
-                    }
                 } else {
                     // For unexpected errors (e.g., network errors), log the whole error
                     console.error('Unexpected error:', error);
@@ -313,11 +309,20 @@ function ThreshCompUI({ siteName, bmpName, displaySetting = 'block', loaderGifRo
                         onClick={(e) => {
                             setIsLoading(true);
                             fetch(`rawdata?sitename=${encodeURIComponent(siteName)}`)
-                                .then(response => {
+                                .then(async response => {
                                     if (!response.ok) {
-                                        // If the response status code is not in the 200-299 range
-                                        // Throw an error and catch it later in the chain
-                                        throw new Error('Network response was not ok');
+                                        try {
+                                            // Attempt to parse the JSON response
+                                            const err = await response.json();
+                                            // Log the detailed error message from the response
+                                            console.error('Error from server:', err.error, err.message);
+                                            // Throw a new error that includes the server's error message for further handling
+                                            throw new Error(`Error from server: ${err.error} - ${err.message}`);
+                                        } catch (parseError) {
+                                            // Handle cases where the error response is not JSON or cannot be parsed
+                                            console.error('Error parsing server response:', parseError);
+                                            throw new Error('An unexpected error occurred');
+                                        }
                                     }
                                     return response.blob();
                                 })
@@ -337,7 +342,7 @@ function ThreshCompUI({ siteName, bmpName, displaySetting = 'block', loaderGifRo
                                 })
                                 .catch(error => {
                                     // Log the error or display an alert/message to the user
-                                    console.error('There was a problem with the fetch operation:', error);
+                                    console.error('There was a problem with the fetch operation:', error.message);
                                     alert('Failed to download the data. Please try again.'); // Example of user notification
                                 })
                                 .finally(() => setIsLoading(false));
@@ -384,14 +389,19 @@ function ThreshCompUI({ siteName, bmpName, displaySetting = 'block', loaderGifRo
                                 },
                                 body: JSON.stringify(currentSitePlotData)
                             })
-                                .then(response => {
-                                    // First, check if the response is ok (status in the range 200-299)
-                                    if (!response.ok) {
-                                        // If response is not ok, we throw an error that includes the status
-                                        throw new Error(`HTTP error! status: ${response.status}`);
+                                .then(async response => {
+                                    try {
+                                        // First, check if the response is ok (status in the range 200-299)
+                                        if (!response.ok) {
+                                            const errorInfo = await response.json();
+                                            // If response is not ok, we throw an error that includes the status
+                                            throw new Error(errorInfo.message);
+                                        }
+                                        // If the response is ok, proceed to process the blob
+                                        return response.blob();
+                                    } catch (parseError) {
+                                        throw new Error(parseError);
                                     }
-                                    // If the response is ok, proceed to process the blob
-                                    return response.blob();
                                 })
                                 .then(blob => {
                                     // Process the blob here
@@ -406,7 +416,7 @@ function ThreshCompUI({ siteName, bmpName, displaySetting = 'block', loaderGifRo
                                 })
                                 .catch(error => {
                                     // Handle any errors that occurred during the fetch or processing
-                                    console.error('Fetch error:', error.message);
+                                    console.error("Error fetching Thresh all site comparison data", error);
                                     alert('An error occurred while downloading the file. Please try again.'); // Notify the user of the error in an appropriate way for your application
                                 })
                                 .finally(() => {
@@ -456,11 +466,19 @@ function ThreshCompUI({ siteName, bmpName, displaySetting = 'block', loaderGifRo
                                 },
                                 body: JSON.stringify(allSitesPlotData)
                             })
-                                .then(response => {
-                                    if (!response.ok) {
-                                        throw new Error("Network response was not ok")
+                                .then(async response => {
+                                    try {
+                                        // First, check if the response is ok (status in the range 200-299)
+                                        if (!response.ok) {
+                                            const errorInfo = await response.json();
+                                            // If response is not ok, we throw an error that includes the status
+                                            throw new Error(errorInfo.message);
+                                        }
+                                        // If the response is ok, proceed to process the blob
+                                        return response.blob();
+                                    } catch (parseError) {
+                                        throw new Error(parseError)
                                     }
-                                    return response.blob();
                                 })
                                 .then(blob => {
                                     // Create a new object URL for the blob

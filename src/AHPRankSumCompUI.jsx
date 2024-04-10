@@ -355,13 +355,22 @@ function AHPRankSumCompUI({ siteName, bmpName, displaySetting = 'block', loaderG
                                 },
                                 body: JSON.stringify(currentSitePlotData)
                             })
-                                .then(response => {
-                                    // First, check if the response is ok (status in the range 200-299)
+                                .then(async response => {
                                     if (!response.ok) {
-                                        // If the response is not ok, throw an error
-                                        throw new Error(`HTTP error! Status: ${response.status}`);
+                                        try {
+                                            // Attempt to parse the JSON response
+                                            const err = await response.json();
+                                            // Log the detailed error message from the response
+                                            console.error('Error from server:', err.error, err.message);
+                                            // Throw a new error that includes the server's error message for further handling
+                                            throw new Error(`Error from server: ${err.error} - ${err.message}`);
+                                        } catch (parseError) {
+                                            // Handle cases where the error response is not JSON or cannot be parsed
+                                            console.error('Error parsing server response:', parseError);
+                                            throw new Error('An unexpected error occurred');
+                                        }
                                     }
-                                    return response.blob(); // Proceed to process the response as a blob if it is ok
+                                    return response.blob();
                                 })
                                 .then(blob => {
                                     // Create a new object URL for the blob
@@ -379,8 +388,12 @@ function AHPRankSumCompUI({ siteName, bmpName, displaySetting = 'block', loaderG
                                 })
                                 .catch(error => {
                                     // Handle any errors that occurred during the fetch or while processing the response
-                                    console.error('Fetch error:', error.message);
-                                    alert('An error occurred while downloading the file. Please try again.'); // Notify the user
+                                    if (error.message) {
+                                        console.error('Fetch error:', error.message);
+                                        alert('An error occurred while downloading the file. Please try again.'); // Notify the user
+                                    } else {
+                                        console.error('Unexpected error:', error);
+                                    }
                                 })
                                 .finally(() => {
                                     // This will run regardless of the previous operations succeeding or failing
